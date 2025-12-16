@@ -50,6 +50,23 @@
 (use-package json-mode
   :defer t)
 
+(use-package vterm
+  :ensure t
+  :config
+  ;; 优化：让 vterm 也就是 Emacs 里的终端 buffer 更好用
+  (setq vterm-max-scrollback 10000)
+  
+  ;; 这是一个很酷的功能：允许 vterm 跟 Emacs 互通剪贴板
+  ;; 即使你在 CLI 里，也能把内容快速弄到 Emacs 笔记里
+  )
+
+;; 绑定一个快捷键快速呼出/隐藏终端
+(use-package vterm-toggle
+  :ensure t
+  :bind ("C-`" . vterm-toggle) ;; 按 Ctrl+` 就像 VSCode 一样调出终端
+  :custom
+  (vterm-toggle-scope 'project)) ;; 自动在当前项目根目录打开
+
 ;; ============================================
 ;; Emacs 30 新标准栈：代码补全
 ;; ============================================
