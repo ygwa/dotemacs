@@ -428,3 +428,4 @@ Projectile 支持多种索引方式：
 
 **提示：** 本配置已优化 Projectile 的使用体验，与 Vertico、Consult 等现代工具完美集成。如有问题，请查看配置文件的 `config/config-package.el` 部分。
 
+
