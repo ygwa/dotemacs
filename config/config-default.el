@@ -1,5 +1,18 @@
-(defalias 'yes-or-no-p 'y-or-n-p)
+(setq use-short-answers t)
 (global-auto-revert-mode 1)
+
+;; ============================================
+;; 文献管理路径配置
+;; ============================================
+
+(defvar my/bibliography-file "~/Documents/org/references.bib"
+  "文献数据库文件路径。")
+
+(defvar my/library-path "~/Documents/org/library/"
+  "文献PDF存储目录。")
+
+(defvar my/lit-notes-path "~/Documents/org/roam/lit/"
+  "文献笔记目录。")
 
 (setq default-directory "~/")
 (setq command-line-default-directory "~/")

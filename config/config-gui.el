@@ -1,67 +1,191 @@
-(when (fboundp 'tool-bar-mode)
-  (tool-bar-mode -1))
-(when (fboundp 'scroll-bar-mode)
-  (scroll-bar-mode -1))
+;;; config-gui.el --- UI and Appearance Configuration -*- lexical-binding: t; -*-
 
-;; simple 是 Emacs 内置包，不需要安装
-;; 注意：use-package 的 :config 会在包加载后执行
-;; 但 simple 是内置包，可能已经加载，所以直接执行配置
-(menu-bar-mode -1)
-;; Emacs 30: 使用 display-line-numbers-mode 替代废弃的 line-number-mode 和 global-linum-mode
-(global-display-line-numbers-mode t)
-(setq display-line-numbers-type 'relative) ; 显示相对行号
+;; ============================================
+;; 1. 基础 UI 行为优化
+;; ============================================
+
+;; 提示：UI 栏的禁用建议留在 early-init.el 以防闪烁
+;; 这里保留作为双重保险
+(setq use-file-dialog nil
+      use-dialog-box nil
+      inhibit-startup-screen t)
+
+(dolist (mode '(tool-bar-mode scroll-bar-mode menu-bar-mode))
+  (when (fboundp mode) (funcall mode -1)))
+
+;; 增强 Emacs 30 的平滑滚动（对阅读电子书至关重要）
+(when (fboundp 'pixel-scroll-precision-mode)
+  (pixel-scroll-precision-mode 1))
+
+;; 行号配置：阅读模式下通常不需要行号，但在编写博客代码块时很有用
+(setq display-line-numbers-type 'relative)
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+;; 在 Org-mode 和阅读模式中禁用行号，保持页面干净
+(add-hook 'org-mode-hook (lambda () (display-line-numbers-mode -1)))
+
+;; ============================================
+;; 2. Emacs 30 内置增强功能
+;; ============================================
+
+;; 启用内置 which-key (Emacs 30+)
+(setq which-key-idle-delay 0.5)
+(which-key-mode)
+
+;; 启用内置 editorconfig
+(editorconfig-mode 1)
+
+;; 基础交互增强
 (show-paren-mode 1)
-(auto-save-mode nil)
-(blink-cursor-mode 1)
 (delete-selection-mode t)
-(global-visual-line-mode t)
+(global-visual-line-mode t) ; 自动折行，阅读体验更佳
 
-;; Emacs 30: 优化配置选项
-(setq auto-save-default nil
-      visible-bell nil
-      make-backup-files nil
-      create-lockfiles nil
-      debug-on-error nil
-      tab-width 4
-      x-select-enable-clipboard t
-      x-select-enable-primary t
-      save-interprogram-paste-before-kill t
-      apropos-do-all t
-      mouse-yank-at-point t)
+;; ============================================
+;; 3. 字体与中文排版优化
+;; ============================================
 
-;; Emacs 30: 启用内置的 which-key
-(when (fboundp 'which-key-mode)
-  (which-key-mode 1))
+;; 设置基础字体
+(set-face-attribute 'default nil :font "JetBrains Mono-14")
 
-;; Emacs 30: 启用内置的 editorconfig 支持
-(when (fboundp 'editorconfig-mode)
-  (editorconfig-mode 1))
+;; 使用 face-font-rescale-alist 微调中文字体缩放（更优雅的方案）
+(defun setup-chinese-fonts ()
+  ;; 设置中文字体
+  (dolist (charset '(han kana symbol cjk-misc bopomofo))
+    (set-fontset-font t charset (font-spec :family "Hiragino Sans GB")))
+  ;; 微调缩放比例以实现视觉对齐
+  (add-to-list 'face-font-rescale-alist '("Hiragino Sans GB" . 1.1)))
 
-;; 使用 Emacs 内置的 modus-operandi 主题
+;; 确保在 GUI 启动后应用字体
+(if (daemonp)
+    (add-hook 'server-after-make-frame-hook #'setup-chinese-fonts)
+  (setup-chinese-fonts))
+
+;; 主题设置
 (load-theme 'modus-operandi t)
 
-(set-frame-font "JetBrains Mono:pixelsize=14")
+;; 注意: rainbow-delimiters 已在 config-package.el 中配置
 
-(dolist (charset '(han kana symbol cjk-misc bopomofo))
-  (set-fontset-font (frame-parameter nil 'font)
-                    charset
-                    (font-spec :family "Hiragino Sans GB" :size 16.3)))
+;; ============================================
+;; 4. 窗口管理 (Window Management)
+;; ============================================
 
-(custom-set-faces
- ;; '(org-document-title ((t (:height 1.0))))
- ;; '(org-level-1 ((t (:inherit outline-1 :height 1.0))))
- ;; '(org-level-2 ((t (:inherit outline-2 :height 1.0))))
- ;; '(org-level-3 ((t (:inherit outline-3 :height 1.0))))
- ;; '(org-level-4 ((t (:inherit outline-4 :height 1.0))))
- ;; '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
- 
- '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
- '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
- '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
- '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
- '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
- '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
- '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
- '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1")))))
+;; Ace-window: 快速跳转分屏
+(use-package ace-window
+  :ensure t
+  :bind ("M-o" . ace-window)
+  :custom
+  (aw-scope 'frame)
+  (aw-dispatch-alist
+   '((?x aw-delete-window "Delete Window")
+     (?m aw-swap-window "Swap Window")
+     (?n aw-split-window-horz "Split Window Horizontal")
+     (?v aw-split-window-vert "Split Window Vertical")
+     (?b aw-switch-buffer-in-window "Select Buffer")
+     (?u winner-undo "Winner Undo"))))
+
+;; Shackle: 控制弹出窗口位置（防止阅读时被弹出窗口干扰）
+(use-package shackle
+  :ensure t
+  :hook (after-init . shackle-mode)
+  :custom
+  (shackle-rules
+   '(("*Help*" :select t :align right :size 0.35)
+     ("*compilation*" :select nil :align bottom :size 0.2 :autoclose t)
+     ("*Messages*" :select nil :align bottom :size 0.2)
+     ("*Org-roam*" :select nil :align right :size 0.3)
+     (magit-status-mode :select t :same t))))
+
+;; Winner-mode: 允许 C-c left 撤销窗口布局改变
+(winner-mode 1)
+
+;; ============================================
+;; 5. 启动仪表盘 (解决 Scratch 启动问题)
+;; ============================================
+
+(use-package nerd-icons
+  :ensure t)
+
+;; 让 Dired 显示图标
+(use-package nerd-icons-dired
+  :ensure t
+  :hook (dired-mode . nerd-icons-dired-mode))
+
+;; 让补全列表显示图标 (配合 config-package.el 中的 corfu)
+(use-package nerd-icons-corfu
+  :ensure t
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
+;; ============================================
+;; 5. 启动仪表盘 (Dashboard) - 双流向工作台版
+;; ============================================
+(use-package dashboard
+  :ensure t
+  :custom
+  ;; 1. 基础外观设置
+  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  (dashboard-startup-banner 'official)
+  (dashboard-banner-logo-title "Thinking & Coding - 你的第二大脑")
+  (dashboard-center-content t)
+  
+  ;; 2. 内容模块布局
+  (dashboard-display-icons-p t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+
+  (dashboard-items '((recents  . 5)
+                     (projects . 5)
+                     (agenda   . 5)))
+  
+  (dashboard-projects-backend 'project-el)
+
+  ;; 3. 启用导航按钮
+  (dashboard-set-navigator t)
+  (dashboard-set-footer nil)
+  (dashboard-week-agenda-trim-leading-zero t)
+
+  ;; 4. 关键：设置 startupify-list 包含 navigator
+  (dashboard-startupify-list '(dashboard-insert-banner
+                               dashboard-insert-newline
+                               dashboard-insert-banner-title
+                               dashboard-insert-newline
+                               dashboard-insert-navigator  ;; 导航按钮
+                               dashboard-insert-newline
+                               dashboard-insert-init-info
+                               dashboard-insert-items
+                               dashboard-insert-newline
+                               dashboard-insert-footer))
+  :config
+  ;; 5. 自定义导航按钮 (使用 Emoji)
+  (setq dashboard-navigator-buttons
+        `(;; 第一排：知识管理流
+          (("📥" "Inbox" "捕捉想法"
+            (lambda (&rest _) (find-file my/org-inbox-file)))
+           ("🔭" "Studies" "专题研究"
+            (lambda (&rest _) (find-file my/org-projects-file)))
+           ("🏛️" "Principles" "底层模型"
+            (lambda (&rest _) (find-file my/org-notes-file))))
+          ;; 第二排：输出与开发流
+          (("💻" "Code" "编程项目"
+            (lambda (&rest _) (project-switch-project)))
+           ("✍️" "New Post" "新建博客"
+            (lambda (&rest _) (call-interactively 'my/org-blog-new-post)))
+           ("🚀" "Publish" "发布博客"
+            (lambda (&rest _) (call-interactively 'my/publish-blog))))))
+
+  (dashboard-setup-startup-hook))
+
+;; ============================================
+;; 6. 其它细节设置
+;; ============================================
+
+(setq auto-save-default nil
+      make-backup-files nil
+      create-lockfiles nil
+      tab-width 4
+      scroll-margin 2       ; 滚动时上方保留2行，视觉更舒适
+      mouse-yank-at-point t)
 
 (provide 'config-gui)
+

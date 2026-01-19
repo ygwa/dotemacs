@@ -1,261 +1,216 @@
-;; ============================================
-;; Org Mode 核心配置
-;; ============================================
-
-;; 抑制 org-element 在非 org buffer 中的警告
-;; 这个警告通常由某些包（如 org-roam）在非 org buffer 中尝试使用 org-element 时触发
-;; 通过包装 org-element-at-point 来安全处理非 org buffer 的情况
-(defun org-element-at-point-safe (orig-fun &rest args)
-  "安全版本的 org-element-at-point，在非 org buffer 中静默返回 nil"
-  (condition-case err
-      (if (derived-mode-p 'org-mode)
-          (apply orig-fun args)
-        nil)
-    (error nil)))
-;; 启用 advice 来抑制警告
-(advice-add 'org-element-at-point :around #'org-element-at-point-safe)
-
-(use-package org
-  :demand
-  :config
-  ;; 基础快捷键
-  (global-set-key (kbd "C-c C-w") 'org-refile)
-  (global-set-key (kbd "C-c c") 'org-capture)
-  (global-set-key (kbd "C-c a") 'org-agenda)
-  (global-set-key (kbd "C-c l") 'org-store-link)
-  
-  ;; Org Tempo - 快速插入代码块和结构
-  (require 'org-tempo)
-  
-  ;; 基础设置
-  (setq org-confirm-babel-evaluate nil)
-  (setq org-log-done 'time)
-  (setq org-log-into-drawer t)  ; 将日志放入抽屉
-  (setq org-startup-with-inline-images t)
-  (setq org-image-actual-width nil)  ; 使用实际图片宽度
-  (setq org-startup-folded nil)  ; 启动时不折叠
-  (setq org-hide-emphasis-markers t)  ; 隐藏强调标记
-  
-  ;; TODO 关键词配置
-  (setq org-todo-keywords
-        '((sequence "TODO(t)" "INPROGRESS(i)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
-  (setq org-todo-keyword-faces
-        '(("TODO" . org-todo)
-          ("INPROGRESS" . "yellow")
-          ("WAITING" . "orange")
-          ("DONE" . org-done)
-          ("CANCELLED" . "gray")))
-  
-  ;; 优先级
-  (setq org-priority-faces
-        '((?A . (:foreground "red" :weight bold))
-          (?B . (:foreground "orange"))
-          (?C . (:foreground "green"))))
-  
-  ;; 目录结构配置
-  (setq org-directory "~/Documents/org")
-  (setq org-inbox-file (expand-file-name "inbox/inbox.org" org-directory))
-  
-  ;; Refile 配置
-  (setq org-refile-targets
-        '((org-inbox-file :maxlevel . 3)
-          (nil :maxlevel . 3)))
-  (setq org-refile-use-outline-path 'file)
-  (setq org-outline-path-complete-in-steps nil)
-  (setq org-refile-allow-creating-parent-nodes 'confirm)
-  
-  ;; Agenda 配置
-  (setq org-agenda-files
-        (list org-inbox-file
-              (expand-file-name "roam" org-directory)))  ; 包含 org-roam 目录
-  
-  ;; PlantUML 配置
-  (setq org-plantuml-jar-path
-        (expand-file-name "~/Documents/tools/plantuml.jar"))
-  (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((plantuml . t)
-     (shell . t)
-     (python . t)
-     (emacs-lisp . t)))
-  
-  ;; 链接配置
-  (setq org-link-abbrev-alist
-        '(("google" . "http://www.google.com/search?q=%s")
-          ("wiki" . "https://en.wikipedia.org/wiki/%s")))
-  
-  ;; 导出配置
-  (setq org-export-with-toc t)
-  (setq org-export-headline-levels 3)
-  
-  ;; Capture 模板（将在 org-roam 配置后扩展）
-  (setq org-capture-templates
-        `(("t" "Todo [inbox]" entry
-           (file+headline ,org-inbox-file "Tasks")
-           "* TODO %?\n%U\n%a")
-          ("n" "Note [inbox]" entry
-           (file+headline ,org-inbox-file "Notes")
-           "* %?\n%U\n%a")
-          ("j" "Journal entry" entry
-           (file+datetree "~/Documents/journal/journal.org")
-           "* %?\n%U"))))
+;;; config-org.el --- 双流向笔记系统 & Hugo 博客配置 -*- lexical-binding: t; -*-
 
 ;; ============================================
-;; Org Mode 美化
+;; 0. 核心路径定义
+;; ============================================
+
+(defvar my/org-root-dir (expand-file-name "~/Documents/org/"))
+
+;; 确保目录存在
+(unless (file-exists-p my/org-root-dir)
+  (make-directory my/org-root-dir t))
+
+;; 笔记流文件
+(defvar my/org-inbox-file    (expand-file-name "inbox.org" my/org-root-dir))
+(defvar my/org-todo-file     (expand-file-name "todos.org" my/org-root-dir))
+(defvar my/org-projects-file (expand-file-name "projects.org" my/org-root-dir))
+(defvar my/org-notes-file    (expand-file-name "notes.org" my/org-root-dir))
+
+;; 博客流文件 (Hugo)
+(defvar my/hugo-root "~/Documents/hugo/ygwa.github.io/")
+(defvar my/org-hugo-posts-file (expand-file-name "blog.org" my/org-root-dir))
+
+;; ============================================
+;; 1. 视觉美化 (Modern Look)
 ;; ============================================
 
 (use-package org-modern
   :ensure t
-  :after org
+  :hook ((org-mode . org-modern-mode)
+         (org-agenda-finalize . org-modern-agenda))
   :custom
-  (org-modern-hide-stars nil)
-  (org-modern-table nil)  ; 如果表格显示有问题可以设为 nil
-  :hook (org-mode . org-modern-mode))
-
-;; 备用：如果 org-modern 不工作，使用 org-superstar
-;; (use-package org-superstar
-;;   :ensure t
-;;   :after org
-;;   :hook (org-mode . org-superstar-mode)
-;;   :custom
-;;   (org-superstar-headline-bullets-list '("◉" "○" "✸" "✿" "✜" "◆" "▶"))
-;;   (org-superstar-item-bullet-alist '((?* . ?•) (?+ . ?➤) (?- . ?•))))
+  ;; 让标签显示为特定的样式或图标
+  (org-modern-tag
+   '(("QUESTION" . "❓")
+     ("NOTE" . "📝")
+     ("PROJECT" . "🏗️")
+     ("BLOG" . "✍️")))
+  (org-modern-star '("◉" "○" "◈" "◇" "✳" "▪"))
+  (org-modern-table-vertical 1)
+  (org-modern-table-horizontal 0.2)
+  (org-modern-list '((43 . "➤") (45 . "•") (42 . "–")))
+  (org-modern-todo nil)
+  (org-modern-tag nil)
+  (org-modern-block-name nil)
+  (org-modern-keyword nil))
 
 ;; ============================================
-;; Org Roam - 知识网络管理
+;; 2. Org Mode 核心行为
 ;; ============================================
 
-(use-package org-roam
-  :ensure t
-  :after org
-  :init
-  (setq org-roam-v2-ack t)  ; 使用 v2 API
-  :custom
-  (org-roam-directory (expand-file-name "~/Documents/org/roam"))
-  (org-roam-db-location (expand-file-name "org-roam.db" user-emacs-directory))
-  (org-roam-db-gc-threshold most-positive-fixnum)  ; 减少数据库更新频率
-  (org-roam-completion-everywhere nil)  ; 只在 org-mode 中补全链接，避免在非 org buffer 中触发警告
-  (org-roam-capture-templates
-   `(("d" "default" plain "%?"
-      :target (file+head "${slug}.org" "#+title: ${title}\n#+date: %<%Y-%m-%d>\n#+last_modified: %U\n\n")
-      :unnarrowed t)
-     ("r" "reference" plain "%?"
-      :target (file+head "${slug}.org" "#+title: ${title}\n#+date: %<%Y-%m-%d>\n#+last_modified: %U\n#+roam_tags: reference\n\n")
-      :unnarrowed t)
-     ("p" "project" plain "%?"
-      :target (file+head "${slug}.org" "#+title: ${title}\n#+date: %<%Y-%m-%d>\n#+last_modified: %U\n#+roam_tags: project\n\n")
-      :unnarrowed t)
-     ("l" "literature note" plain "%?"
-      :target (file+head "${slug}.org" "#+title: ${title}\n#+date: %<%Y-%m-%d>\n#+last_modified: %U\n#+roam_tags: literature\n\n")
-      :unnarrowed t)
-     ("m" "meeting" plain "%?"
-      :target (file+head "${slug}.org" "#+title: ${title}\n#+date: %<%Y-%m-%d>\n#+last_modified: %U\n#+roam_tags: meeting\n\n")
-      :unnarrowed t)))
-  (org-roam-dailies-capture-templates
-   `(("d" "default" entry "* %?"
-      :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n\n"))))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n g" . org-roam-graph)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n c" . org-roam-capture)
-         ("C-c n j" . org-roam-dailies-capture-today)
-         ("C-c n t" . org-roam-tag-add)
-         ("C-c n a" . org-roam-alias-add)
-         :map org-mode-map
-         ("C-M-i" . completion-at-point))
+(use-package org
+  :ensure nil
   :config
-  (org-roam-setup)
-  ;; 自动同步数据库
-  (org-roam-db-autosync-mode))
+  ;; 基础设置
+  (setq org-directory my/org-root-dir)
+  (setq org-default-notes-file my/org-inbox-file)
+  (setq org-startup-indented t)
+  (setq org-hide-emphasis-markers t)
+  (setq org-image-actual-width 600)
+  (setq org-startup-with-inline-images t)
 
-;; ============================================
-;; Org Roam UI - 可视化知识网络
-;; ============================================
+  ;; 源代码块
+  (setq org-src-fontify-natively t)
+  (setq org-src-tab-acts-natively t)
+  (setq org-confirm-babel-evaluate nil)
 
-(use-package org-roam-ui
-  :ensure t
-  :after org-roam
-  :custom
-  (org-roam-ui-sync-theme t)
-  (org-roam-ui-follow t)
-  (org-roam-ui-update-on-save t)
-  (org-roam-ui-open-on-start nil)  ; 启动时不自动打开
-  :bind ("C-c n u" . org-roam-ui-mode))
-
-;; ============================================
-;; Consult Org Roam - 增强的搜索功能
-;; ============================================
-
-(use-package consult-org-roam
-  :ensure t
-  :after org-roam
-  :custom
-  (consult-org-roam-grep-func #'consult-ripgrep)
-  :bind (("C-c n s" . consult-org-roam-search)
-         ("C-c n r" . consult-org-roam)
-         ("C-c n b" . consult-org-roam-backlinks))
-  :config
-  ;; consult-org-roam-mode 是全局模式，但只在 org-mode 相关操作时使用
-  ;; 如果仍然出现警告，可以注释掉下面这行
-  (consult-org-roam-mode 1))
-
-;; ============================================
-;; Org Journal - 日记功能
-;; ============================================
-
-(use-package org-journal
-  :ensure t
-  :bind (("C-c C-s" . org-journal-search))
-  :custom
-  (org-journal-dir "~/Documents/journal/")
-  (org-journal-date-format "%Y-%m-%d")
-  (org-journal-file-format "%Y-%m-%d.org")
-  (org-journal-enable-agenda-integration t))
-
-;; ============================================
-;; Org Appear - 更好的显示效果
-;; ============================================
+  ;; 快捷键
+  (global-set-key (kbd "C-c l") #'org-store-link)
+  (global-set-key (kbd "C-c a") #'org-agenda)
+  (global-set-key (kbd "C-c c") #'org-capture))
 
 (use-package org-appear
   :ensure t
-  :after org
   :hook (org-mode . org-appear-mode)
   :custom
   (org-appear-autolinks t)
-  (org-appear-autokeywords t)
-  (org-appear-autoentities t)
-  (org-appear-autosubmarkers t)
-  (org-appear-delay 0.3))
+  (org-appear-autosubmarkers t))
 
 ;; ============================================
-;; Org 其他增强功能
+;; 3. Diagram / Babel 支持
 ;; ============================================
 
-;; Org 链接预览（只在 org-mode 中启用）
-(use-package org-link-beautify
+(defvar my/var-dir (expand-file-name "var/" user-emacs-directory))
+
+(use-package ob-mermaid
+  :ensure t)
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (shell . t)
+   (mermaid . t)
+   (plantuml . t)
+   (dot . t)
+   (gnuplot . t)))
+
+(add-hook 'org-mode-hook #'org-display-inline-images)
+
+;; ============================================
+;; 4. 双流向工作流 (Capture & Refile)
+;; ============================================
+
+;; 优化后的 Capture 模板：直通 Todo，直通 Hugo，只有 Idea 进 Inbox
+(setq org-capture-templates
+      `(
+        ;; === 路径 A: 执行流 (明确的任务 -> Todos) ===
+        ("t" "Todo Task" entry (file+headline my/org-todo-file "Tasks")
+         "* TODO %^{任务名称} \n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%?" 
+         :empty-lines 1)
+
+        ;; === 路径 B: 孵化流 (模糊的想法 -> Inbox -> 知识加工) ===
+        ("i" "Inbox / Idea" entry (file+headline my/org-inbox-file "Inbox")
+         "* %^{想法/灵感} :NOTE:\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n- 背景: %?\n- 思考: "
+         :empty-lines 1)
+        
+        ("q" "Question" entry (file+headline my/org-inbox-file "Inbox")
+         "* TODO %^{你要解决什么问题？} :QUESTION:\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n- 现状: %?\n- 猜测: ")
+
+        ;; === 路径 C: 输出流 (博客 -> Hugo -> 发布) ===
+        ;; 注意：这需要你的 blog.org 里面有一个 "Blog Posts" 的标题
+        ("b" "Blog Post (Hugo)" entry (file+olp my/org-hugo-posts-file "Blog Posts")
+         "* TODO %^{文章标题}\n:PROPERTIES:\n:EXPORT_FILE_NAME: %^{Slug (文件名)}\n:EXPORT_DATE: %t\n:END:\n\n%?"
+         :empty-lines 1)
+        ))
+
+(setq org-todo-keywords
+      '((sequence "TODO(t!)"  ; 待办
+                  "NEXT(n)"   ; 下一步
+                  "WAIT(w@/!)"; 等待
+                  "|" 
+                  "DONE(d!)"  ; 完成
+                  "KILL(k@)") ; 取消
+        ))
+
+(setq org-todo-keyword-faces
+      '(("TODO" . (:foreground "red" :weight bold))
+        ("NEXT" . (:foreground "orange" :weight bold))
+        ("WAIT" . (:foreground "gray" :slant italic))
+        ("DONE" . (:foreground "forest green" :weight bold))))
+
+;; Agenda 视图包含所有相关文件
+(setq org-agenda-files 
+      (list my/org-inbox-file 
+            my/org-projects-file 
+            my/org-todo-file
+            ;; 博客计划也包含在日程中，方便管理发布进度
+            my/org-hugo-posts-file))
+
+;; Refile 目标：主要用于处理 Inbox 里的内容
+(setq org-refile-targets
+      `((,my/org-projects-file . (:maxlevel . 3))
+        (,my/org-notes-file    . (:maxlevel . 3))
+        ;; 偶尔 Inbox 里的想法变成任务时，也可以 Refile 到 Todo
+        (,my/org-todo-file     . (:maxlevel . 1))))
+
+(setq org-refile-use-outline-path 'file)
+(setq org-outline-path-complete-in-steps nil)
+(setq org-refile-allow-creating-parent-nodes 'confirm)
+
+;; ============================================
+;; 5. Hugo 博客系统 (ox-hugo)
+;; ============================================
+(use-package ox-hugo
+  :ensure t
+  :after ox
+  :config
+  ;; 设置 Hugo 站点的根目录
+  (setq org-hugo-base-dir my/hugo-root)
+  
+  ;; 默认将内容导出到 content/posts (你可以根据需要修改 section)
+  (setq org-hugo-section "writings")
+  
+  ;; 自动导出功能：当保存 blog.org 时，自动生成 Markdown
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (when (string= (buffer-file-name) my/org-hugo-posts-file)
+                (org-hugo-auto-export-mode)))))
+
+
+
+;; ============================================
+;; 6. 附件 / 引用
+;; ============================================
+
+(use-package org-download
   :ensure t
   :after org
-  :hook (org-mode . org-link-beautify-mode))
+  :config
+  (setq org-download-method 'directory)
+  (setq org-download-image-dir "images")
+  (setq org-download-heading-lvl nil)
+  :hook ((dired-mode . org-download-enable)
+         (org-mode . org-download-enable)))
 
-;; Org 表格美化
+(use-package citar
+  :ensure t
+  :custom
+  (citar-bibliography (list (expand-file-name "references.bib" my/org-root-dir)))
+  (citar-library-paths (list (expand-file-name "library/" my/org-root-dir)))
+  :bind (:map org-mode-map
+              ("C-c r o" . citar-open)
+              ("C-c r i" . citar-insert-citation)))
+
 (use-package valign
   :ensure t
-  :after org
-  :hook (org-mode . valign-mode))
+  :hook ((org-mode . valign-mode)
+         (markdown-mode . valign-mode))
+  :config
+  (setq valign-fancy-bar t)
+  (setq valign-max-line-width 1))
 
-;; ============================================
-;; 目录结构建议
-;; ============================================
-;; ~/Documents/org/
-;; ├── inbox/
-;; │   └── inbox.org          # 收件箱，临时任务和笔记
-;; ├── roam/                  # Org-roam 笔记目录
-;; │   ├── 2024-01-01.org     # 每日笔记
-;; │   ├── project-xxx.org    # 项目笔记
-;; │   └── ...                # 其他笔记
-;; └── journal/               # 日记目录（org-journal）
-;;     └── 2024-01-01.org
+(with-eval-after-load 'org-modern
+  (setq org-modern-table nil))
 
 (provide 'config-org)
+;;; config-org.el ends here
