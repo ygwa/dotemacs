@@ -159,21 +159,32 @@
 ;; ============================================
 ;; 5. Hugo 博客系统 (ox-hugo)
 ;; ============================================
+(defvar my/org-hugo--save-timer nil
+  "保存 blog.org 时用于 debounce 的 timer 对象。")
+
+(defun my/org-hugo-export-debounced ()
+  "保存 blog.org 后延迟导出 (debounce 5s, 防连续保存抖动)。
+比 `org-hugo-auto-export-mode' 更可控 — 后者是每次保存立即导出。"
+  (when (and (eq major-mode 'org-mode)
+             (buffer-file-name)
+             (string= (buffer-file-name) my/org-hugo-posts-file))
+    (when (timerp my/org-hugo--save-timer)
+      (cancel-timer my/org-hugo--save-timer))
+    (setq my/org-hugo--save-timer
+          (run-with-idle-timer 5 nil #'org-hugo-export-wim))))
+
 (use-package ox-hugo
   :ensure t
   :after ox
   :config
   ;; 设置 Hugo 站点的根目录
   (setq org-hugo-base-dir my/hugo-root)
-  
+
   ;; 默认将内容导出到 content/posts (你可以根据需要修改 section)
-  (setq org-hugo-section "writings")
-  
-  ;; 自动导出功能：当保存 blog.org 时，自动生成 Markdown
-  (add-hook 'org-mode-hook
-            (lambda ()
-              (when (string= (buffer-file-name) my/org-hugo-posts-file)
-                (org-hugo-auto-export-mode)))))
+  (setq org-hugo-section "writings"))
+
+;; 注册 debounce hook (放在 use-package 外面, 避免 config 重复运行导致 hook 累积)
+(add-hook 'after-save-hook #'my/org-hugo-export-debounced)
 
 
 

@@ -14,7 +14,7 @@ Thinking & Coding - 你的第二大脑
 [📥 Inbox] [🔭 Studies] [🏛️ Principles]
 [💻 Code]
 
-✦  79 packages  ·  loaded in 0.005731 seconds
+✦  79 packages  ·  loaded in 0.005731 seconds   ← `emacs --batch` 加载时间, GUI 实测约 0.8-1.5s
 
 Recent Files: (r)
     ~/Develop/github/dapei-skill/SKILL.md

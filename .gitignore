@@ -1,4 +1,4 @@
-auto-save-list/
+# auto-save 文件已迁移到 var/auto-save-list/ (被下方 var/ 行覆盖)
 elpa/
 eshell/
 recentf

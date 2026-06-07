@@ -233,15 +233,25 @@
   (define-key eglot-mode-map (kbd "C-c s i") 'eglot-find-implementation)
   (define-key eglot-mode-map (kbd "C-c s t") 'eglot-find-typeDefinition)
   
-  ;; Rust 安装提示 (rust-mode / rust-ts-mode 共用)
-  (defvar my/rust-analyzer-install-hint
-    "提示: 未找到 rust-analyzer。请安装: curl -L https://github.com/rust-lang/rust-analyzer/releases/latest/download/rust-analyzer-$(uname | tr '[:upper:]' '[:lower:]')-$(uname -m) | sudo tee /usr/local/bin/rust-analyzer && sudo chmod +x /usr/local/bin/rust-analyzer")
-  (defun my/rust-analyzer-hint ()
-    "缺少 rust-analyzer 时打印安装提示。"
-    (unless (executable-find "rust-analyzer")
-      (message my/rust-analyzer-install-hint)))
-  (add-hook 'rust-mode-hook   #'my/rust-analyzer-hint)
-  (add-hook 'rust-ts-mode-hook #'my/rust-analyzer-hint))
+  ;; Rust 安装提示 (defvar/defun/hook 移到 use-package 外面, 见下方)
+  ;; 原因: use-package :config 懒加载, 首次打开 .rs 时 hint hook 还没注册, 第一次无提示
+  )
+
+;; Rust 安装提示: defvar/defun/hook 顶层定义, 不依赖 eglot 懒加载
+(defvar my/rust-analyzer-install-hint
+  (pcase system-type
+    ('darwin "提示: 未找到 rust-analyzer。推荐:\n  brew install rust-analyzer            ; Homebrew 用户\n  rustup component add rust-analyzer   ; rustup 用户")
+    ('gnu/linux "提示: 未找到 rust-analyzer。推荐:\n  rustup component add rust-analyzer\n  或从 https://github.com/rust-lang/rust-analyzer/releases 下载预编译二进制放到 PATH")
+    (_ "提示: 未找到 rust-analyzer。请访问 https://rust-analyzer.github.io/ 安装。"))
+  "rust-analyzer 缺失时的安装提示, 按 system-type 分平台。")
+
+(defun my/rust-analyzer-hint ()
+  "缺少 rust-analyzer 时打印安装提示。"
+  (unless (executable-find "rust-analyzer")
+    (message my/rust-analyzer-install-hint)))
+
+(add-hook 'rust-mode-hook   #'my/rust-analyzer-hint)
+(add-hook 'rust-ts-mode-hook #'my/rust-analyzer-hint)
 
 ;; ============================================
 ;; 10. Tree-sitter (Emacs 30 内置)

@@ -44,13 +44,25 @@
         (yaml "https://github.com/tree-sitter/tree-sitter-yaml")))
 
 (defun my/install-all-treesit-grammars ()
-  "安装所有配置的 tree-sitter 语法库。"
+  "逐个安装所有 tree-sitter 语法库 (按顺序而非并行, 避免编译风暴)。
+每个语法库下载+编译需数秒到数十秒, 总耗时约 2-5 分钟。
+已安装的会自动跳过, 失败可重跑续装。
+注意: 下载是异步的, \"处理完毕\"只是请求已发出; 实际编译在后台完成。"
   (interactive)
-  (dolist (grammar treesit-language-source-alist)
-    (let ((lang (car grammar)))
-      (unless (treesit-ready-p lang t)
-        (message "正在安装 %s 语法库..." lang)
-        (treesit-install-language-grammar lang)))))
+  (let ((pending (seq-filter
+                  (lambda (lang) (not (treesit-ready-p lang t)))
+                  (mapcar #'car treesit-language-source-alist))))
+    (if (null pending)
+        (message "treesit: 所有语法库已安装 ✓")
+      (let ((total (length pending))
+            (i 0))
+        (message "treesit: 待安装 %d 个 — %s"
+                 total
+                 (mapconcat #'symbol-name pending ", "))
+        (dolist (lang pending)
+          (setq i (1+ i))
+          (message ">>> [%d/%d] 正在安装 %s..." i total lang)
+          (treesit-install-language-grammar lang))))))
 
 ;; ============================================
 ;; 3. Eglot LSP 配置 (前端)

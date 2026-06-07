@@ -25,7 +25,12 @@
 
 (show-paren-mode 1)
 (delete-selection-mode t)
-(global-visual-line-mode t)          ; 阅读体验更佳
+;; 视觉折行: 只在长文本模式开, 编程 buffer 保持硬换行
+;; 避免 M-f/M-b 按视觉行跳、复制粘贴破坏列对齐
+(add-hook 'text-mode-hook #'visual-line-mode)
+(add-hook 'org-mode-hook #'visual-line-mode)
+(add-hook 'markdown-mode-hook #'visual-line-mode)
+(add-hook 'Info-mode-hook #'visual-line-mode)
 
 ;; ============================================
 ;; 3. 主题 (doom-themes, GUI/TUI 通用)
@@ -190,7 +195,13 @@
 ;; 8. 其它细节
 ;; ============================================
 
-(setq auto-save-default nil
+;; auto-save 启用 (写到 var/auto-save-list/, 防 Emacs crash / 断电丢失未保存内容)
+;; backup 和 lockfile 仍然禁用, 避免污染项目目录
+(setq auto-save-default t
+      auto-save-interval 300           ; 5 分钟一次自动保存
+      auto-save-silent t               ; 不弹窗打扰
+      auto-save-list-file-prefix
+      (expand-file-name "var/auto-save-list/session-" user-emacs-directory)
       make-backup-files nil
       create-lockfiles nil
       tab-width 4
