@@ -2,6 +2,36 @@
 
 为 Emacs 30.2 优化的个人配置。**GUI / TUI 同源**，所有视觉配置已用 `(display-graphic-p)` 守护，所有外部二进制依赖已用 `executable-find` 守护。
 
+## 🎯 启动后第一眼
+
+真实 dashboard 缓冲区渲染（`emacs --batch` 抓取，无任何 mockup）：
+
+```text
+EMACS
+
+Thinking & Coding - 你的第二大脑
+
+[📥 Inbox] [🔭 Studies] [🏛️ Principles]
+[💻 Code]
+
+✦  79 packages  ·  loaded in 0.005731 seconds
+
+Recent Files: (r)
+    ~/Develop/github/dapei-skill/SKILL.md
+    ~/.emacs.d/bookmarks
+    ~/.emacs.d/.gitignore
+    ~/.emacs.d/init.el
+    ~/Develop/github/dapei-skill/skills/cdr/SKILL.md
+
+Projects: (p)
+    ~/.emacs.d/
+
+Agenda for the coming week: (a)
+      Task:        2025-01-25 TODO 每周回顾 (Weekly Review)
+```
+
+<sub>替换为 PNG 截图：启动 GUI Emacs 后执行 `screencapture -l $(osascript -e 'tell application "System Events" to tell process "Emacs" to get id of front window') docs/screenshot.png`</sub>
+
 ## 📁 目录结构
 
 ```
