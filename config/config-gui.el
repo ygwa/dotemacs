@@ -66,5 +66,7 @@
                   (mapc #'disable-theme custom-enabled-themes)
                   (load-theme new-theme t))))))
 
+(context-menu-mode 1)                   ; GUI 右键上下文菜单 (Emacs 29+)
+
 (provide 'config-gui)
 ;;; config-gui.el ends here

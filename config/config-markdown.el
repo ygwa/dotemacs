@@ -71,8 +71,7 @@
   ;; ============================================
 
   (define-key markdown-mode-map (kbd "C-c C-p") #'my/markdown-preview-eww)
-  (define-key markdown-mode-map (kbd "C-c C-c") #'markdown-other-window)
-  (define-key markdown-mode-map (kbd "M-RET")   #'markdown-insert-list-item))
+  (define-key markdown-mode-map (kbd "C-c C-c") #'markdown-other-window))
 
 ;; ============================================
 ;; Tree-sitter 增强（Emacs 30+ 内置）

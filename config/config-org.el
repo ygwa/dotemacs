@@ -37,12 +37,7 @@
   (org-modern-table-horizontal 0.2)
   ;; 列表项前缀
   (org-modern-list '((43 . "➤") (45 . "•") (42 . "–")))
-  ;; 关闭 TODO 关键字 / 标签 / 块名 / 关键字的前缀美化 (用默认样式)
-  (org-modern-todo nil)
-  (org-modern-tag nil)
-  (org-modern-block-name nil)
-  (org-modern-keyword nil)
-  ;; 如果想启用 emoji 标签前缀, 取消下面 4 行注释, 同时删掉上面 (org-modern-tag nil)
+  ;; 如想启用 emoji 标签前缀, 取消下面 4 行注释
   ;; (org-modern-tag
   ;;  '(("QUESTION" . "❓")
   ;;    ("NOTE" . "📝")

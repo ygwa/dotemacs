@@ -79,6 +79,9 @@
 ;; 5. 窗口管理
 ;; ============================================
 
+(global-set-key (kbd "C-c <right>") #'winner-redo)  ; 配 winner-undo (C-c <left>) 双向撤销布局
+
+;; Ace-window: 快速跳转分屏
 (use-package ace-window
   :ensure t
   :bind ("M-o" . ace-window)
@@ -104,6 +107,7 @@
      (magit-status-mode :select t :same t))))
 
 (winner-mode 1)
+(repeat-mode 1)                          ; 按一次 M-o 进弹窗, 重复 n 一直水平分屏
 
 ;; ============================================
 ;; 6. nerd-icons (含 TUI 守护)

@@ -5,24 +5,15 @@
 ;; ============================================
 
 (when (>= emacs-major-version 30)
-  ;; TypeScript/TSX 文件关联
-  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+  ;; TS/JS/CSS/JSON 走 major-mode-remap-alist (config-package.el); 这里只补
+  ;; remap 没覆盖的 .tsx / .mts / .cts / .jsx / .mjs / .cjs
   (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.mts\\'" . typescript-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.cts\\'" . typescript-ts-mode))
-  
-  ;; JavaScript/JSX 文件关联
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.jsx\\'" . js-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.mjs\\'" . js-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.cjs\\'" . js-ts-mode))
-  
-  ;; CSS/SCSS 文件关联
-  (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
-  
-  ;; JSON 文件关联
-  (add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
-  
+
   ;; 提示用户安装 tree-sitter 语法库
   (defun my/check-treesit-grammar (mode grammar)
     "检查并提示安装 tree-sitter 语法库。"
@@ -96,6 +87,10 @@
 (add-hook 'typescript-ts-mode-hook 'eglot-ensure)
 (add-hook 'tsx-ts-mode-hook 'eglot-ensure)
 (add-hook 'js-ts-mode-hook 'eglot-ensure)
+
+;; 启用 inlay hints (参数类型/变量类型, 配合 eglot-workspace-configuration)
+(add-hook 'typescript-ts-mode-hook #'eglot-inlay-hints-mode)
+(add-hook 'tsx-ts-mode-hook #'eglot-inlay-hints-mode)
 
 (add-hook 'css-ts-mode-hook 'rainbow-mode)
 
