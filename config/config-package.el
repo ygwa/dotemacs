@@ -65,6 +65,7 @@
   :demand t
   :init
   (global-corfu-mode)
+  (corfu-popupinfo-mode 1)                ; 启用弹窗, M-d / M-l 才生效
   :custom
   (corfu-cycle t)
   (corfu-auto t)

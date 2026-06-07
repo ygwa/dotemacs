@@ -122,21 +122,7 @@
   (apheleia-global-mode +1))
 
 ;; ============================================
-;; 5. Flymake ESLint 集成
-;; ============================================
-
-(defun my/setup-flymake-eslint ()
-  "设置 Flymake ESLint 检查。"
-  (when (and (executable-find "eslint")
-             (locate-dominating-file default-directory ".eslintrc.js"))
-    (flymake-mode 1)))
-
-(add-hook 'typescript-ts-mode-hook #'my/setup-flymake-eslint)
-(add-hook 'tsx-ts-mode-hook #'my/setup-flymake-eslint)
-(add-hook 'js-ts-mode-hook #'my/setup-flymake-eslint)
-
-;; ============================================
-;; 6. 前端开发辅助功能
+;; 5. 前端开发辅助功能
 ;; ============================================
 
 ;; 缩进设置
@@ -191,20 +177,14 @@
 
 (with-eval-after-load 'typescript-ts-mode
   (define-key typescript-ts-mode-map (kbd "C-c C-f") 'apheleia-format-buffer)
-  (define-key typescript-ts-mode-map (kbd "C-c s r") 'eglot-rename)
-  (define-key typescript-ts-mode-map (kbd "C-c s a") 'eglot-code-actions)
   (define-key typescript-ts-mode-map (kbd "C-c s o") 'eglot-code-action-organize-imports))
 
 (with-eval-after-load 'tsx-ts-mode
   (define-key tsx-ts-mode-map (kbd "C-c C-f") 'apheleia-format-buffer)
-  (define-key tsx-ts-mode-map (kbd "C-c s r") 'eglot-rename)
-  (define-key tsx-ts-mode-map (kbd "C-c s a") 'eglot-code-actions)
   (define-key tsx-ts-mode-map (kbd "C-c s o") 'eglot-code-action-organize-imports))
 
 (with-eval-after-load 'js-ts-mode
-  (define-key js-ts-mode-map (kbd "C-c C-f") 'apheleia-format-buffer)
-  (define-key js-ts-mode-map (kbd "C-c s r") 'eglot-rename)
-  (define-key js-ts-mode-map (kbd "C-c s a") 'eglot-code-actions))
+  (define-key js-ts-mode-map (kbd "C-c C-f") 'apheleia-format-buffer))
 
 ;; ============================================
 ;; 9. 安装提示

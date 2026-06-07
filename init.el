@@ -5,11 +5,9 @@
 ;; 1. 启动性能优化 (早期加速)
 ;; ============================================
 
-;; gc-cons-threshold 由 early-init.el 管理 (启动期 max, startup hook 恢复 16MB)
-;; 增加进程输出限制 (对 LSP 和阅读器有极大帮助)
-(setq read-process-output-max (* 1024 1024))
-;; 禁用某些不必要的底层处理
-(setq idle-update-delay 1.0)
+;; gc-cons-threshold 由 early-init.el 管理 (启动期 max, startup hook 恢复 32MB)
+;; 增加进程输出限制 (LSP / 阅读器)
+(setq read-process-output-max (* 4 1024 1024))
 
 ;; ============================================
 ;; 2. 加载路径管理

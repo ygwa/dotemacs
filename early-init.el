@@ -15,7 +15,7 @@
 ;; 启动完成后恢复 GC 阈值和 file-name-handler
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq gc-cons-threshold (* 16 1024 1024)) ; 恢复到 16MB
+            (setq gc-cons-threshold (* 32 1024 1024)) ; 恢复到 32MB
             (setq file-name-handler-alist default-file-name-handler-alist)))
 
 ;; ============================================
