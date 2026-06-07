@@ -48,11 +48,11 @@
 (setq use-package-expand-minimally t)   ; 减少字节码体积
 
 ;; ============================================
-;; 4. 关键环境变量设置 (尤其是 macOS)
+;; 4. 关键环境变量设置 (跨平台 — PATH 同步)
 ;; ============================================
 
 (use-package exec-path-from-shell
-  :if (memq system-type '(darwin berkeley-unix))
+  :if (memq system-type '(darwin berkeley-unix gnu/linux))
   :ensure t
   :config
   (exec-path-from-shell-initialize))
@@ -66,7 +66,8 @@
 		  config-org
                   config-gui
 		  config-web
-                  config-package))
+                  config-package
+                  config-markdown))
 
 ;; ============================================
 ;; 6. 运行期性能恢复 (启动完成后执行)

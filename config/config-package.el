@@ -221,20 +221,11 @@
         eglot-connect-timeout 60
         eglot-sync-connect 1)
   
-  ;; Rust 配置
-  (when (eq system-type 'darwin)
-    (let ((possible-paths '("/opt/homebrew/bin/rust-analyzer"
-                            "/usr/local/bin/rust-analyzer"
-                            "~/.cargo/bin/rust-analyzer"))
-          (found nil))
-      (dolist (path possible-paths)
-        (let ((expanded-path (expand-file-name path)))
-          (when (and (not found) (file-executable-p expanded-path))
-            (add-to-list 'eglot-server-programs
-                         `(rust-mode . (,expanded-path)) t)
-            (add-to-list 'eglot-server-programs
-                         `(rust-ts-mode . (,expanded-path)) t)
-            (setq found t))))))
+  ;; Rust 配置 — 通用 executable-find 查找，不再硬编码路径
+  (let ((ra (executable-find "rust-analyzer")))
+    (when ra
+      (add-to-list 'eglot-server-programs `(rust-mode . ,(vector ra)) t)
+      (add-to-list 'eglot-server-programs `(rust-ts-mode . ,(vector ra)) t)))
   
   ;; 通用键绑定 (C-c s = server)
   (define-key eglot-mode-map (kbd "C-c s r") 'eglot-rename)
@@ -249,11 +240,11 @@
   (add-hook 'rust-mode-hook
             (lambda ()
               (when (not (executable-find "rust-analyzer"))
-                (message "提示: 未找到 rust-analyzer。请安装: brew install rust-analyzer"))))
+                (message "提示: 未找到 rust-analyzer。请安装: curl -L https://github.com/rust-lang/rust-analyzer/releases/latest/download/rust-analyzer-$(uname | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/aarch64/aarch64/;s/x86_64/x86_64/') | sudo tee /usr/local/bin/rust-analyzer && sudo chmod +x /usr/local/bin/rust-analyzer"))))
   (add-hook 'rust-ts-mode-hook
             (lambda ()
               (when (not (executable-find "rust-analyzer"))
-                (message "提示: 未找到 rust-analyzer。请安装: brew install rust-analyzer")))))
+                (message "提示: 未找到 rust-analyzer。请安装: curl ...rust-analyzer 到 PATH")))))
 
 ;; ============================================
 ;; 10. Tree-sitter (Emacs 30 内置)

@@ -50,17 +50,16 @@ PACKAGE-NAME 是要修复的包名（字符串）"
           (when (not found)
             (message "警告: 未找到 %s" tool)))))
     
-    ;; 如果都没找到，提供安装建议
+    ;; 如果都没找到，提供通用包管理器安装建议
     (when (not found)
-      (message "提示: 请运行 'brew install ripgrep' 安装 ripgrep")
-      ;; 尝试直接添加 Homebrew 路径（macOS）
-      (when (memq system-type '(darwin mac))
-        (let ((brew-path "/opt/homebrew/bin"))
-          (when (file-directory-p brew-path)
-            (add-to-list 'exec-path brew-path)
-            (setenv "PATH" (concat brew-path ":" (or (getenv "PATH") "")))
-            (when (executable-find "rg")
-              (message "✓ 已添加 Homebrew 路径，找到 ripgrep"))))))))
+      (let ((install-hint
+             (pcase system-type
+               ('darwin "brew install ripgrep")
+               ('gnu/linux (concat "apt install ripgrep"
+                                   " / dnf install ripgrep"
+                                   " / pacman -S ripgrep"))
+               (_ "请参照系统文档安装 ripgrep"))))
+        (message "提示: 未找到 ripgrep。安装方式: %s" install-hint)))))
 
 (provide 'package-utils)
 

@@ -40,24 +40,40 @@
 (global-visual-line-mode t) ; 自动折行，阅读体验更佳
 
 ;; ============================================
-;; 3. 字体与中文排版优化
+;; 3. 字体与中文排版优化 (跨平台 fallback)
 ;; ============================================
 
-;; 设置基础字体
-(set-face-attribute 'default nil :font "JetBrains Mono-14")
+;; 按平台选择字体 fallback
+(defvar my/monospace-font
+  (pcase system-type
+    ('darwin "JetBrains Mono-14")
+    ('gnu/linux "JetBrains Mono-14")
+    (_ "Monospace-14"))
+  "等宽字体 (按 system-type 选择)。")
 
-;; 使用 face-font-rescale-alist 微调中文字体缩放（更优雅的方案）
-(defun setup-chinese-fonts ()
-  ;; 设置中文字体
-  (dolist (charset '(han kana symbol cjk-misc bopomofo))
-    (set-fontset-font t charset (font-spec :family "Hiragino Sans GB")))
-  ;; 微调缩放比例以实现视觉对齐
-  (add-to-list 'face-font-rescale-alist '("Hiragino Sans GB" . 1.1)))
+(defvar my/cjk-font-family
+  (pcase system-type
+    ('darwin "Hiragino Sans GB")
+    ('gnu/linux "Noto Sans CJK SC")
+    (_ nil))
+  "中文字体 (按 system-type 选择 fallback)。nil 表示不配置。")
 
-;; 确保在 GUI 启动后应用字体
+(defun my/setup-gui-fonts ()
+  "配置 GUI 字体 (等宽字体 + CJK fallback)。"
+  (set-face-attribute 'default nil :font my/monospace-font)
+  (when my/cjk-font-family
+    (dolist (charset '(han kana symbol cjk-misc bopomofo))
+      (set-fontset-font t charset (font-spec :family my/cjk-font-family)))
+    (add-to-list 'face-font-rescale-alist (cons my/cjk-font-family 1.1))))
+
+;; 终端下不设置字体 (使用终端自己的字体)
 (if (daemonp)
-    (add-hook 'server-after-make-frame-hook #'setup-chinese-fonts)
-  (setup-chinese-fonts))
+    (add-hook 'server-after-make-frame-hook
+              (lambda ()
+                (when (display-graphic-p)
+                  (my/setup-gui-fonts))))
+  (when (display-graphic-p)
+    (my/setup-gui-fonts)))
 
 ;; 主题设置
 (load-theme 'modus-operandi t)

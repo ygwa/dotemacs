@@ -31,12 +31,13 @@
    nil 'fullscreen
    (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
 
-(when (string= system-type "darwin")
-  ;; Emacs 30: macOS 特定优化
-  (setq dired-use-ls-dired nil)
-  ;; Emacs 30: 优化 macOS 上的文件操作性能
-  (when (>= emacs-major-version 30)
-    (setq insert-directory-program "ls")))
+;; dired: macOS 的 ls 不支持 --dired，GNU/Linux 默认支持
+(pcase system-type
+  ('darwin
+   (setq dired-use-ls-dired nil)
+   (setq insert-directory-program "ls"))
+  ('gnu/linux
+   (setq dired-use-ls-dired t)))
 
 (global-set-key (kbd "<s-return>") 'toggle-fullscreen)
 
