@@ -1,393 +1,253 @@
-#+TITLE: Emacs Org Mode 使用指南
-#+AUTHOR: Emacs Configuration
-#+DATE: 2025-01-07
+#+TITLE: Emacs 使用指南
+#+AUTHOR: ygwang
+#+DATE: 2026-06-07
 
 * 快速入门
 
-**第一次使用**
+** 启动后
 
-1. 初始化目录结构
-   - 确保 =~/Documents/org/= 目录存在
-   - 创建子目录：=roam/=（用于 Org Roam）、=library/=（用于文献）
-   - 创建 =inbox.org= 文件用于快速收集
+- 顶部 Dashboard 出现，导航按钮:
+  - 📥 Inbox / 🔭 Studies / 🏛️ Principles  → 打开对应 =.org= 文件
+  - 💻 Code → 切换项目 (=project-switch-project=)
+- mode-line 是 doom-modeline 风格，主题 doom-one（macOS 暗色自动跟随）
+- 终端下: =emacs -nw=
 
-2. 查看快捷键
-   - 按 =C-c ?= 查看完整的快捷键帮助
+** 目录布局
 
-3. 创建第一篇笔记
-   - 按 =F7= 快速创建待办事项
-   - 按 =F8= 快速创建笔记
-   - 按 =F9= 查找或创建 Roam 笔记
+启动时自动创建 =~/Documents/org/=:
+
+| 文件 | 用途 |
+|------+------|
+| =inbox.org=    | 想法收集（孵化流入口） |
+| =todos.org=    | 执行流任务 |
+| =projects.org= | 专题研究 |
+| =notes.org=    | 底层模型/笔记 |
+| =blog.org=     | Hugo 博客源 |
+
+Hugo 站点: =~/Documents/hugo/ygwa.github.io/=（需自行 =git clone=）
 
 * 核心工作流
 
-**1. 收集与整理**
+** 1. 收集与整理 (Org Capture)
 
-*快速收集*
-| 快捷键 | 功能                      |
-|--------+---------------------------|
-| F7     | 创建待办事项              |
-| F8     | 创建笔记（存入 inbox.org） |
-| F9     | 创建/查找 Roam 笔记       |
+=C-c c= 触发 org-capture，模板:
 
+| 键 | 模板 | 写入位置 |
+|----|------|---------|
+| =t= | Todo Task       | =todos.org= → Tasks |
+| =i= | Inbox / Idea    | =inbox.org= → Inbox, 标签 =NOTE= |
+| =q= | Question        | =inbox.org= → Inbox, 标签 =QUESTION= |
+| =b= | Blog Post (Hugo) | =blog.org= → Blog Posts |
 
-*查看任务*
-| 快捷键  | 功能                         |
-|---------+------------------------------|
-| C-c a   | 打开 Agenda（默认今日视图）   |
-| C-c a g | 我的日程（今日 + 进行中任务） |
-| C-c a w | 本周任务                     |
-| C-c a p | 按优先级查看所有任务          |
-| C-c a t | 按标签查看任务               |
+=C-c a= 打开 org-agenda，看 todos/projects/inbox/blog 四文件的待办。
 
-*处理收集箱*
-- =C-c c= - Org Capture（更多模板选择）
+=C-c l= 存链接，备用插入到笔记里。
 
-可用的 Capture 模板：
-- =t= - Todo [inbox]
-- =n= - Note [inbox]
-- =m= - Meeting（会议记录）
+** 2. 文献管理 (Citar)
 
-**2. 知识管理（Org Roam）**
+文献库: =~/Documents/org/references.bib=，PDF 目录: =~/Documents/org/library/=.
 
-*创建笔记*
-| 快捷键  | 功能           |
-|---------+----------------|
-| C-c n f | 查找或创建笔记 |
-| C-c n i | 插入笔记链接   |
-| C-c n d | 创建每日日记   |
+- =C-c r o= → 打开文献（按 BibTeX key）
+- =C-c r i= → 插入引用
 
-*笔记模板*
-使用 =C-c n f= 时，可选择以下模板：
-- =d= - default/concept（概念笔记）
-- =l= - literature（文献笔记）
-- =q= - question（问题探究）
-- =i= - idea（想法记录）
-- =p= - blog post（博客文章）
+** 3. 搜索与导航
 
-*浏览笔记*
-| 快捷键  | 功能                                     |
-|---------+------------------------------------------|
-| C-c n l | 切换 Roam 缓冲区（显示当前笔记的反向链接） |
-| C-c n r | 最近修改的笔记                           |
-| C-c n b | 书签笔记（标记了 :bookmark: 标签的笔记）  |
-| C-c n [ | 前一天的日记                             |
-| C-c n ] | 后一天的日记                             |
+| 键 | 功能 |
+|----|------|
+| =C-s=         | consult-line（当前 buffer） |
+| =C-c g=       | consult-git-grep（项目内） |
+| =C-c k=       | consult-ripgrep（项目内） |
+| =C-c C-r=     | consult-recent-file |
+| =C-x b=       | consult-buffer |
+| =M-y=         | consult-yank-pop（增强 kill-ring） |
+| =C-x r b=     | consult-bookmark |
+| =C-x l=       | consult-locate |
+| =C-; / C-.=   | embark-dwim / embark-act（上下文动作） |
+| =M-o=         | ace-window（分屏跳转） |
+| =C-c j / J / w= | avy（字符/行/词跳转） |
 
-*可视化*
-| 快捷键  | 功能                              |
-|---------+-----------------------------------|
-| C-c u o | 打开 Org Roam UI（浏览器中的图谱） |
-| C-c u f | 在 UI 中跟随当前节点               |
+** 4. 项目导航 (project.el)
 
-**3. 文献管理**
+自动识别 Git 仓库 + =package.json= / =requirements.txt= / =.project= 目录。
 
-*安装依赖*
-#+BEGIN_SRC bash
-# 安装 PDF 阅读器
-brew install poppler  # macOS
+| 键 | 功能 |
+|----|------|
+| =C-c p f= | project-find-file |
+| =C-c p b= | project-switch-to-buffer |
+| =C-c p d= | project-dired |
+| =C-c p v= | project-vc-dir（=magit-status=） |
+| =C-c p s= | project-shell（vterm） |
+| =C-c p g= | project-find-regexp |
 
-# 或者确保你有 pdf-tools 所需的工具
-#+END_SRC
+** 5. 终端
 
-*文献操作*
-| 快捷键  | 功能                            |
-|---------+---------------------------------|
-| C-c r o | 打开文献（通过 BibTeX key 搜索） |
-| C-c r f | 打开文献 PDF 文件               |
-| C-c r n | 打开文献笔记                    |
-| C-c r i | 插入文献引用                    |
-| C-c r k | 插入文献 key                    |
-| C-c r s | 插入文献引用（带完整引用格式）   |
-| C-c r d | 为当前笔记添加文献关联           |
-| C-c r a | 打开文献笔记（如果有）           |
+=C-`=  →  vterm-toggle（在项目范围内 toggle vterm）
 
-*文献笔记流程*
-1. 使用 =C-c n f= 创建文献笔记（选择 =l= 模板）
-2. 在创建时输入文献路径或 BibTeX key
-3. 使用 =org-noter= 进行批注（需要先打开 PDF）
-4. 使用 =org-remark= 在 PDF 上标记重点
+** 6. 开发辅助
 
-*批注与标记*
-| 快捷键  | 功能                    |
-|---------+-------------------------|
-| C-c n m | org-remark 标记选中文本 |
-| C-c n o | org-remark 打开标记列表 |
+*** LSP（Eglot，Emacs 30 内置）
 
-**4. 搜索与导航**
+TS/TSX/JS 自动启 eglot。Rust 需先装 =rust-analyzer=。
 
-*统一搜索*
-- =C-c s n= - 统一搜索笔记
+通用键（在 eglot-mode-map）:
 
-搜索选项：
-- 标题搜索
-- 标签搜索
-- 内容搜索
-- 全部搜索
+| 键 | 功能 |
+|----|------|
+| =C-c s r= | rename |
+| =C-c s f= | format |
+| =C-c s a= | code-actions |
+| =C-c s h= | help-at-point |
+| =C-c s d= | find-declaration |
+| =C-c s i= | find-implementation |
+| =C-c s t= | find-typeDefinition |
 
-*其他搜索*
-| 快捷键 | 功能                        |
-|--------+-----------------------------|
-| C-s    | 当前文件搜索（consult-line） |
-| C-c g  | Git grep 搜索               |
-| C-c k  | Ripgrep 搜索项目内容        |
+TypeScript 模式额外:
 
-**5. 图片管理**
+- =C-c C-f= → apheleia-format-buffer（prettier）
+- =C-c s o= → code-action-organize-imports
 
-*插入图片*
-| 快捷键  | 功能            |
-|---------+-----------------|
-| C-c n v | 从剪贴板粘贴图片 |
-| C-c n P | 截图（macOS）   |
-| C-c n D | 删除图片链接    |
+*** Web 项目
 
-*归档图片*
-- =C-c n A= - 将当前文件的所有图片归档到 assets 文件夹
+- =C-c r n= → my/npm-run（自动检测 pnpm/yarn/npm，列出 scripts 选一个跑）
+- =M-x my/check-web-dev-tools= → 检查 vtsls/prettier/eslint/tailwind 是否齐
+- ESLint 自动启用（需项目里有 =.eslintrc.js=）
 
-**6. 标签管理**
+** 7. 博客写作 (ox-hugo)
 
-*定义的标签*
-系统预定义了以下标签快捷键：
-- =@work= (w) - 工作相关
-- =@personal= (p) - 个人事务
-- =@blog= (b) - 博客任务
-- =@reading= (r) - 阅读相关
-- =@idea= (i) - 想法记录
-- =@question= (q) - 问题待解决
-- =@learning= (l) - 学习笔记
-- =@project= (j) - 项目相关
+写: =C-c c b= 模板（需 blog.org 有 "Blog Posts" 标题）
 
-在任务行末尾按 =C-c C-c= 可以快速添加标签
+编辑: blog.org 任一子树，=#+TITLE= 即文章标题，=#+EXPORT_FILE_NAME:= 是 slug
 
-*标签统计*
-| 快捷键  | 功能                    |
-|---------+-------------------------|
-| C-c t l | 列出所有标签及其使用次数 |
-| C-c t c | 清理未使用的标签         |
+自动 export: 保存 blog.org 时自动生成 Markdown 到 Hugo
 
-**7. 工作流维护**
+手动命令:
 
-*笔记维护*
-| 快捷键  | 功能                          |
-|---------+-------------------------------|
-| C-c w o | 查找孤儿笔记（没有链接的笔记） |
-| C-c w c | 查找有链接的笔记               |
-| C-c w a | 归档当前笔记到 archive 文件夹  |
+- =M-x org-hugo-export-wim-to-md= → 当前子树
+- =M-x org-hugo-export-subtree= → 当前子树
+- =M-x org-hugo-export-project= → 全量
 
-*时间追踪*
-| 快捷键  | 功能              |
-|---------+-------------------|
-| C-c C-t | 查看今天的时间报告 |
-| C-c C-w | 查看本周的时间报告 |
+** 8. 字典 / 翻译
 
-**8. 博客写作**
+=C-c y= → youdao-dictionary-search-at-point+
 
-*创建博客文章*
-- =C-c h n= - 创建新的博客文章
+* 快捷键速查
 
-*导出文章*
-| 快捷键  | 功能                    |
-|---------+-------------------------|
-| C-c h e | 导出当前文章到 Hugo     |
-| C-c h E | 导出并启动预览          |
-| C-c h a | 导出所有文章            |
-| C-c h h | 打开 easy-hugo 管理界面 |
+** Org
 
-*博客写作流程*
-1. 使用 =C-c n f= 创建笔记，选择 =p= 模板
-2. 输入标题、分类、标签等元数据
-3. 使用 =C-c n v= 插入截图
-4. 插入代码块和内容
-5. 使用 =C-c h e= 导出到 Markdown
-6. 使用 =C-c h E= 启动 Hugo 预览
+| 键 | 功能 |
+|----|------|
+| =C-c c= | Capture |
+| =C-c a= | Agenda |
+| =C-c l= | Store Link |
 
-**9. 开发辅助**
+** 搜索
 
-*LSP 功能*
-| 快捷键  | 功能                  |
-|---------+-----------------------|
-| C-c s r | 重命名符号            |
-| C-c s f | 格式化代码            |
-| C-c s a | 代码操作（自动修复等） |
-| C-c s h | LSP 帮助              |
-| C-c s d | 跳转到定义            |
-| C-c s i | 跳转到实现            |
-| C-c s t | 跳转到类型定义        |
+| 键 | 功能 |
+|----|------|
+| =C-s=         | consult-line |
+| =C-c g=       | consult-git-grep |
+| =C-c k=       | consult-ripgrep |
+| =C-c C-r=     | consult-recent-file |
+| =C-x b=       | consult-buffer |
+| =M-y=         | consult-yank-pop |
+| =C-x r b=     | consult-bookmark |
+| =C-x l=       | consult-locate |
 
-*代码格式化*
-- =C-c C-f= - 使用 Apheleia 格式化当前缓冲区
+** 文献 / 引用
 
-* 常用场景
+| 键 | 功能 |
+|----|------|
+| =C-c r o= | citar-open |
+| =C-c r i= | citar-insert-citation |
+| =C-c r n= | my/npm-run（web 脚本） |
 
-**场景1：快速记录想法**
-1. 随时按 =F8= 创建笔记
-2. 记录想法内容
-3. 添加标签（如 =@idea=）
-4. 后续整理时，按 =C-c a g= 查看所有待处理的想法
+** 项目
 
-**场景2：读书笔记**
-1. 准备好 PDF 文件（放在 =~/Documents/org/library/=）
-2. 按 =C-c n f= 创建文献笔记
-3. 选择 =l= 模板，输入文献信息
-4. 使用 =org-noter= 进行批注（需要配置）
-5. 使用 =org-remark= 标记重点
+=C-c p f / b / d / v / s / g=
 
-**场景3：会议记录**
-1. 会议开始前，按 =F7= 创建待办
-2. 或使用 =C-c c= 选择 =m= 模板
-3. 记录参与人员、讨论内容
-4. 在"行动项"部分记录后续任务
+** LSP
 
-**场景4：问题解决**
-1. 遇到问题时，按 =C-c n f= 创建笔记
-2. 选择 =q= 模板（question）
-3. 在"探索过程"中记录尝试的方案
-4. 在"结论"部分记录最终解决方案
-5. 使用 =C-c n i= 链接到相关笔记
+=C-c s r / f / a / h / d / i / t=
 
-**场景5：博客写作**
-1. 按 =C-c n f= 选择 =p= 模板创建博客草稿
-2. 编写内容，插入图片 =C-c n v=
-3. 插入代码块，使用 =C-c C-f= 格式化
-4. 完成后按 =C-c h e= 导出
-5. 按 =C-c h E= 启动预览查看效果
+** 跳转
 
-**场景6：项目跟踪**
-1. 为项目创建专门笔记，添加 =@project= 标签
-2. 使用 =C-c a t= 按标签筛选项目相关任务
-3. 使用 =C-c c t= 查看项目投入的时间
-4. 项目完成后使用 =C-c w a= 归档笔记
+| 键 | 功能 |
+|----|------|
+| =M-o=          | ace-window |
+| =C-c j / J / w= | avy |
+| =C-`=          | vterm-toggle |
+| =C-c y=        | 字典 |
 
-**场景7：每日回顾**
-1. 按 =C-c n d= 创建或查看今日日记
-2. 查看今日计划完成情况
-3. 使用 =C-c C-t= 查看今日时间分配
-4. 为明天的任务创建 TODO
+** 格式 / 动作
 
-* 高级技巧
-
-**1. 批量操作**
-- 查找孤儿笔记后，批量链接到相关笔记
-- 使用标签统计识别不常用的标签，考虑合并
-- 定期运行 =C-c w o= 清理孤立笔记
-
-**2. 搜索技巧**
-- 使用 consult 的 orderless 模式可以空格分隔多个关键词
-- 标签搜索可以使用通配符，如 =@work*= 搜索所有工作相关标签
-
-**3. 图片管理**
-- 经常整理图片到 assets 文件夹，避免混乱
-- 使用相对路径确保笔记可以移动
-
-**4. 时间追踪**
-- 在开始任务前使用 =C-c C-x C-i= 开始计时
-- 完成后使用 =C-c C-x C-o= 停止计时
-- 定期查看时间报告优化工作流程
+| 键 | 功能 |
+|----|------|
+| =C-c C-f= | apheleia format |
+| =C-. / C-;= | embark |
 
 * 配置自定义
 
-**修改路径**
-编辑 =~/.emacs.d/config/config-default.el=，修改以下变量：
+** 修改路径
+
+编辑 =~/.emacs.d/config/config-org.el=:
 
 #+BEGIN_SRC elisp
-;; Hugo 博客路径
-(defvar my/hugo-root "~/Documents/hugo/")
-(defvar my/hugo-blog-dir "~/Documents/hugo/blog/")
-
-;; 文献管理路径
-(defvar my/bibliography-file "~/Documents/org/references.bib")
-(defvar my/library-path "~/Documents/org/library/")
-(defvar my/lit-notes-path "~/Documents/org/roam/lit/")
+(defvar my/org-root-dir         "~/Documents/org/")
+(defvar my/org-inbox-file       (expand-file-name "inbox.org"    my/org-root-dir))
+(defvar my/org-todo-file        (expand-file-name "todos.org"    my/org-root-dir))
+(defvar my/org-projects-file    (expand-file-name "projects.org" my/org-root-dir))
+(defvar my/org-notes-file       (expand-file-name "notes.org"    my/org-root-dir))
+(defvar my/org-hugo-posts-file  (expand-file-name "blog.org"     my/org-root-dir))
+(defvar my/hugo-root            "~/Documents/hugo/ygwa.github.io/")
 #+END_SRC
 
-**添加自定义标签**
-编辑 =~/.emacs.d/config/config-org.el= 中的 =org-tag-alist=：
+** 添加 Capture 模板
 
-#+BEGIN_SRC elisp
-(setq org-tag-alist
-      '(("@work" . ?w)
-        ("@yourtag" . ?y)  ; 添加你的标签
-        ))
-#+END_SRC
+编辑 =~/.emacs.d/config/config-org.el= 中 =org-capture-templates=.
+
+** 添加 TODO 关键字
+
+编辑 =~/.emacs.d/config/config-org.el= 中 =org-todo-keywords=.
+
+** 换主题
+
+编辑 =~/.emacs.d/config/config-gui.el= 第 81 行 =my/theme= 变量。可选:
+
+- =doom-one= / =doom-one-light=（深 / 浅）
+- =doom-dracula= / =doom-gruvbox= / =doom-solarized-dark= 等
+
+** 改 mode-line 高度
+
+编辑 =~/.emacs.d/config/config-gui.el= 中 =doom-modeline-height=.
 
 * 故障排除
 
-**问题：Org Roam 数据库未同步**
-解决：按 =M-x org-roam-db-sync= 手动同步
+** LSP 不工作
 
-**问题：图片无法粘贴**
-解决：确保已安装 =pngpaste=（macOS）或确认剪贴板中有图片
+1. 检查 language server 是否安装（=which vtsls=，=which typescript-language-server=）
+2. =M-x my/check-web-dev-tools= 看 web 工具状态
+3. 查看 =*eglot-events*= 缓冲区
 
-**问题：LSP 功能不工作**
-解决：
-1. 检查是否安装了对应的 language server
-2. 按 =M-x eglot= 手动启动
-3. 查看 =*eglot-events*= 缓冲区获取错误信息
+** 博客导出失败
 
-**问题：博客导出失败**
-解决：
-1. 检查 =my/hugo-blog-dir= 路径是否正确
-2. 确认 ox-hugo 已正确安装
-3. 查看 =*Messages*= 缓冲区获取错误信息
+1. 确认 =my/hugo-root= 路径正确，Hugo 站点已 clone
+2. =M-x org-hugo-export-wim-to-md= 报错时查 =*Messages*=
+3. 确认 ox-hugo 已装（=M-x list-packages=）
 
-* 快捷键速查表
+** Doom-modeline / Nerd-icons 不显示
 
-**快速创建**
-| 快捷键 | 功能                |
-|--------+---------------------|
-| F7     | 创建待办            |
-| F8     | 创建笔记            |
-| F9     | 查找/创建 Roam 笔记 |
+1. =M-x doom-modeline-mode= 确认 ON
+2. 字体: =M-x nerd-icons-install-fonts= 下载 Nerd Font
+3. macOS GUI: 在终端/Emacs 里设置字体为已安装的 Nerd Font
+4. TUI: 终端需配 Nerd Font（iTerm2 / Kitty / Alacritty 都支持）
 
-**Org 核心**
-| 快捷键 | 功能       |
-|--------+------------|
-| C-c c  | Capture    |
-| C-c a  | Agenda     |
-| C-c l  | Store Link |
+** 主题没切
 
-**Org Roam**
-| 快捷键  | 功能     |
-|---------+----------|
-| C-c n f | 查找笔记 |
-| C-c n i | 插入链接 |
-| C-c n d | 今日日记 |
-| C-c n r | 最近笔记 |
+- 手动 =M-x load-theme RET doom-one RET=
+- macOS 暗色自动跟随: =M-x describe-variable RET my/theme= 看当前值
 
-**搜索**
-| 快捷键  | 功能     |
-|---------+----------|
-| C-c s n | 统一搜索 |
-| C-c g   | Git grep |
-| C-c k   | Ripgrep  |
+** 包装不上 (MELPA 404)
 
-**文献**
-| 快捷键  | 功能     |
-|---------+----------|
-| C-c r o | 打开文献 |
-| C-c r i | 插入引用 |
-
-**博客**
-| 快捷键  | 功能       |
-|---------+------------|
-| C-c h n | 新建文章   |
-| C-c h e | 导出文章   |
-| C-c h E | 导出并预览 |
-
-**开发**
-| 快捷键  | 功能     |
-|---------+----------|
-| C-c s r | 重命名   |
-| C-c s f | 格式化   |
-| C-c s a | 代码操作 |
-
-**帮助**
-| 快捷键 | 功能     |
-|--------+----------|
-| C-c ?  | 显示帮助 |
-
-* 更多帮助
-
-- 按 =C-c ?= 查看完整快捷键列表
-- 按 =C-h k= 查看任意按键的功能
-- 按 =C-h f= 查看函数文档
+1. =M-x package-refresh-contents= 刷新索引
+2. 重启 Emacs
+3. 仍然失败: 临时换 =https://melpa.org/packages/= 作为源

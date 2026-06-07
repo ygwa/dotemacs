@@ -25,10 +25,6 @@
 ;; shell
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
-;;; rainbow
-(use-package rainbow-mode
-  :ensure t)
-
 (use-package rainbow-delimiters
   :ensure t
   :init
@@ -77,8 +73,9 @@
   (corfu-quit-at-boundary t)
   (corfu-quit-no-match t)
   (corfu-preview-current nil)
-  (corfu-min-width 80)
-  (corfu-max-width corfu-min-width)
+  ;; TUI 窄终端 (< 80) 时 min-width 不应硬卡 80, 用窗口宽度的 60% 当上限
+  (corfu-min-width 30)
+  (corfu-max-width (lambda () (max 30 (floor (* (window-width) 0.6)))))
   (corfu-count 10)
   :config
   (define-key corfu-map (kbd "C-n") 'corfu-next)
@@ -186,8 +183,7 @@
   :diminish smartparens-mode
   :config
   (require 'smartparens-config)
-  (smartparens-global-mode 1)
-  (show-paren-mode t))
+  (smartparens-global-mode 1))
 
 (use-package youdao-dictionary
   :ensure t
@@ -236,15 +232,15 @@
   (define-key eglot-mode-map (kbd "C-c s i") 'eglot-find-implementation)
   (define-key eglot-mode-map (kbd "C-c s t") 'eglot-find-typeDefinition)
   
-  ;; Rust 安装提示
-  (add-hook 'rust-mode-hook
-            (lambda ()
-              (when (not (executable-find "rust-analyzer"))
-                (message "提示: 未找到 rust-analyzer。请安装: curl -L https://github.com/rust-lang/rust-analyzer/releases/latest/download/rust-analyzer-$(uname | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/aarch64/aarch64/;s/x86_64/x86_64/') | sudo tee /usr/local/bin/rust-analyzer && sudo chmod +x /usr/local/bin/rust-analyzer"))))
-  (add-hook 'rust-ts-mode-hook
-            (lambda ()
-              (when (not (executable-find "rust-analyzer"))
-                (message "提示: 未找到 rust-analyzer。请安装: curl ...rust-analyzer 到 PATH")))))
+  ;; Rust 安装提示 (rust-mode / rust-ts-mode 共用)
+  (defvar my/rust-analyzer-install-hint
+    "提示: 未找到 rust-analyzer。请安装: curl -L https://github.com/rust-lang/rust-analyzer/releases/latest/download/rust-analyzer-$(uname | tr '[:upper:]' '[:lower:]')-$(uname -m) | sudo tee /usr/local/bin/rust-analyzer && sudo chmod +x /usr/local/bin/rust-analyzer")
+  (defun my/rust-analyzer-hint ()
+    "缺少 rust-analyzer 时打印安装提示。"
+    (unless (executable-find "rust-analyzer")
+      (message my/rust-analyzer-install-hint)))
+  (add-hook 'rust-mode-hook   #'my/rust-analyzer-hint)
+  (add-hook 'rust-ts-mode-hook #'my/rust-analyzer-hint))
 
 ;; ============================================
 ;; 10. Tree-sitter (Emacs 30 内置)

@@ -1,19 +1,6 @@
 (setq use-short-answers t)
 (global-auto-revert-mode 1)
 
-;; ============================================
-;; 文献管理路径配置
-;; ============================================
-
-(defvar my/bibliography-file "~/Documents/org/references.bib"
-  "文献数据库文件路径。")
-
-(defvar my/library-path "~/Documents/org/library/"
-  "文献PDF存储目录。")
-
-(defvar my/lit-notes-path "~/Documents/org/roam/lit/"
-  "文献笔记目录。")
-
 (setq default-directory "~/")
 (setq command-line-default-directory "~/")
 
@@ -39,9 +26,28 @@
   ('gnu/linux
    (setq dired-use-ls-dired t)))
 
-(global-set-key (kbd "<s-return>") 'toggle-fullscreen)
+(when (display-graphic-p)
+  (global-set-key (kbd "<s-return>") 'toggle-fullscreen))
 
+;; ============================================
+;; 跨环境视觉微调 (GUI vs TUI)
+;; ============================================
+
+;; 光标样式: GUI 用细竖条, TUI 用方框 (Emacs 默认)
+;; 不在 daemon/early-init 期执行, 避免 headless 启动时无 frame
+(unless (daemonp)
+  (setq-default cursor-type
+                (if (display-graphic-p)
+                    '(bar . 2)
+                  'box)))
+
+;; 行距: GUI 给一点呼吸感, TUI 不设置 (终端控不准)
+(when (display-graphic-p)
+  (setq-default line-spacing 0.1))
+
+;; ============================================
 ;; Emacs 30: 编码设置优化
+;; ============================================
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
@@ -49,8 +55,6 @@
 ;; Emacs 30: 设置默认字符编码
 (when (fboundp 'set-charset-priority)
   (set-charset-priority 'unicode))
-
-(display-time)
 
 (provide 'config-default)
 

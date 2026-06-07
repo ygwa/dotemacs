@@ -5,8 +5,7 @@
 ;; 1. 启动性能优化 (早期加速)
 ;; ============================================
 
-;; 暂时调高垃圾回收阈值以加速启动
-(setq gc-cons-threshold (* 100 1024 1024))
+;; gc-cons-threshold 由 early-init.el 管理 (启动期 max, startup hook 恢复 16MB)
 ;; 增加进程输出限制 (对 LSP 和阅读器有极大帮助)
 (setq read-process-output-max (* 1024 1024))
 ;; 禁用某些不必要的底层处理
@@ -64,6 +63,7 @@
 ;; 按照逻辑顺序加载
 (mapc #'require '(config-default
 		  config-org
+                  config-shared
                   config-gui
 		  config-web
                   config-package
@@ -75,9 +75,7 @@
 
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (message "Emacs started in %s." (emacs-init-time))
-            ;; 提示清理无用包
-            (setq package-unused-archives nil)))
+            (message "Emacs started in %s." (emacs-init-time))))
 
 ;; ============================================
 ;; 7. 自定义变量文件 (保持 init.el 干净)

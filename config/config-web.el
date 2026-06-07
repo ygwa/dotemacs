@@ -186,25 +186,7 @@
 (global-set-key (kbd "C-c r n") 'my/npm-run)
 
 ;; ============================================
-;; 7. 项目类型检测
-;; ============================================
-
-(defun my/detect-next-project ()
-  "检测当前目录是否是 Next.js 项目。
-如果文件不存在或解析失败，返回 nil。"
-  (when-let ((root (locate-dominating-file default-directory "package.json")))
-    (let ((pkg-file (expand-file-name "package.json" root)))
-      (condition-case nil
-          (when (file-exists-p pkg-file)
-            (let* ((json-object-type 'alist)
-                   (pkg (json-read-file pkg-file))
-                   (deps (append (alist-get 'dependencies pkg)
-                                 (alist-get 'devDependencies pkg))))
-              (assoc 'next deps)))
-        (error nil)))))
-
-;; ============================================
-;; 8. 快捷键绑定
+;; 7. 快捷键绑定
 ;; ============================================
 
 (with-eval-after-load 'typescript-ts-mode

@@ -15,9 +15,14 @@ smex-items
 tramp
 transient/history.el
 custom.el
-transient/history.el
+custom.el~
 games/
 .org-id-locations
 org-roam.db
 tree-sitter
 var/
+/.agent-shell/
+agent/
+*.elc
+*.eld
+

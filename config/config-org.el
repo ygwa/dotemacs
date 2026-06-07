@@ -29,20 +29,26 @@
   :hook ((org-mode . org-modern-mode)
          (org-agenda-finalize . org-modern-agenda))
   :custom
-  ;; 让标签显示为特定的样式或图标
-  (org-modern-tag
-   '(("QUESTION" . "❓")
-     ("NOTE" . "📝")
-     ("PROJECT" . "🏗️")
-     ("BLOG" . "✍️")))
+  ;; 标题符号 (heading bullets)
   (org-modern-star '("◉" "○" "◈" "◇" "✳" "▪"))
+  ;; 表格: 关闭 org-modern 自带的表格样式, 用 valign-mode 接管
+  (org-modern-table nil)
   (org-modern-table-vertical 1)
   (org-modern-table-horizontal 0.2)
+  ;; 列表项前缀
   (org-modern-list '((43 . "➤") (45 . "•") (42 . "–")))
+  ;; 关闭 TODO 关键字 / 标签 / 块名 / 关键字的前缀美化 (用默认样式)
   (org-modern-todo nil)
   (org-modern-tag nil)
   (org-modern-block-name nil)
-  (org-modern-keyword nil))
+  (org-modern-keyword nil)
+  ;; 如果想启用 emoji 标签前缀, 取消下面 4 行注释, 同时删掉上面 (org-modern-tag nil)
+  ;; (org-modern-tag
+  ;;  '(("QUESTION" . "❓")
+  ;;    ("NOTE" . "📝")
+  ;;    ("PROJECT" . "🏗️")
+  ;;    ("BLOG" . "✍️")))
+  )
 
 ;; ============================================
 ;; 2. Org Mode 核心行为
@@ -80,19 +86,17 @@
 ;; 3. Diagram / Babel 支持
 ;; ============================================
 
-(defvar my/var-dir (expand-file-name "var/" user-emacs-directory))
-
 (use-package ob-mermaid
   :ensure t)
 
 (org-babel-do-load-languages
  'org-babel-load-languages
- '((emacs-lisp . t)
+ `((emacs-lisp . t)
    (shell . t)
-   (mermaid . t)
-   (plantuml . t)
-   (dot . t)
-   (gnuplot . t)))
+   ,@(when (executable-find "mermaid")  '((mermaid . t)))
+   ,@(when (executable-find "plantuml") '((plantuml . t)))
+   ,@(when (executable-find "dot")      '((dot . t)))
+   ,@(when (executable-find "gnuplot")  '((gnuplot . t)))))
 
 (add-hook 'org-mode-hook #'org-display-inline-images)
 
@@ -208,9 +212,6 @@
   :config
   (setq valign-fancy-bar t)
   (setq valign-max-line-width 1))
-
-(with-eval-after-load 'org-modern
-  (setq org-modern-table nil))
 
 (provide 'config-org)
 ;;; config-org.el ends here

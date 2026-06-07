@@ -22,11 +22,8 @@
 ;; 2. 界面视觉优化 (防止启动闪烁)
 ;; ============================================
 
-;; 彻底禁用不必要的 UI 元素 (在窗口创建前执行)
+;; 启动期不显示欢迎信息
 (setq inhibit-startup-message t)
-(setq inhibit-startup-echo-area-message user-login-name)
-(setq inhibit-default-init t)
-(setq initial-scratch-message nil)
 
 ;; 禁用 UI 栏 (Emacs 30 这样写更高效)
 (push '(menu-bar-lines . 0) default-frame-alist)
