@@ -1,86 +1,60 @@
-;;; config-markdown.el --- Markdown editing and preview  -*- lexical-binding: t; -*-
+;;; config-markdown.el --- Minimal Markdown configuration  -*- lexical-binding: t; -*-
 
 ;; ============================================
-;; Markdown 编辑：语法高亮 + 渲染预览
+;; 1. markdown-mode 基础
 ;; ============================================
+;; 用 markdown-mode 自带的 markdown-view-mode 做 TUI 渲染
+;; 切换: M-x markdown-view-mode (或 M-x gfm-view-mode)
+;; 退出: 同样命令再按一次
 
 (use-package markdown-mode
   :ensure t
-  :mode (("\\.md\\'" . markdown-mode)
-         ("\\.markdown\\'" . markdown-mode)
-         ;; 项目内的 SKILL.md, CHANGELOG.md 等也会自动匹配
-         )
+  :mode (("\\.md\\'"       . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
   :init
-  ;; 使用 pandoc 渲染（支持 GFM 表格/任务列表/数学公式）
+  ;; 有 pandoc 就用 (用于 export), 没有也能编辑/查看
   (when (executable-find "pandoc")
-    (setq markdown-command "pandoc -f gfm -t html5 --mathjax --standalone"))
+    (setq markdown-command "pandoc -f gfm -t html5 --standalone"))
   :hook
-  (markdown-mode . my/markdown-setup)
+  (markdown-mode . (lambda ()
+                     "Markdown 打开时的本地设置。"
+                     (visual-line-mode 1)))
   :config
   ;; ============================================
-  ;; 语法高亮增强
+  ;; 编辑期增强
   ;; ============================================
 
-  ;; 代码块内部原生高亮（```python ... ``` 等）
-  (setq markdown-fontify-code-blocks-natively t)
-
-  ;; 标题使用不同字号显示（视觉层次更清晰）
-  (setq markdown-header-scaling t)
-
-  ;; 打开折叠支持
-  (setq markdown-hide-markup t)
-
-  ;; 列表缩进感知
-  (setq markdown-list-indent-width 2)
-
-  ;; 自动补全标记符号
-  (setq markdown-electric-pair-angles t)
-
-  ;; GFM 支持
-  (setq markdown-enable-math t)
-  (setq markdown-enable-html t)
-  (setq markdown-enable-wiki-links t)
+  ;; 代码块原生高亮 (```python ... ```)
+  (setq markdown-fontify-code-blocks-natively t
+        ;; 折行: visual-line-mode 已在 hook 里开
+        markdown-list-indent-width 2
+        markdown-electric-pair-angles t
+        ;; 隐藏 markup 标记 (打开 file 时看着干净)
+        markdown-hide-markup t)
 
   ;; ============================================
-  ;; 渲染预览（使用 pandoc + eww 内联浏览器）
+  ;; TUI 渲染 (markdown-mode 自带, 无需 pandoc)
   ;; ============================================
-
-  (defun my/markdown-preview-eww ()
-    "用 pandoc 将当前 Markdown 渲染为 HTML，在 eww 中预览。"
-    (interactive)
-    (let* ((input-file (buffer-file-name))
-           (output-file (concat (file-name-sans-extension input-file)
-                                "-preview.html"))
-           (cmd (format "%s %s -o %s"
-                        markdown-command
-                        (shell-quote-argument input-file)
-                        (shell-quote-argument output-file))))
-      (shell-command cmd)
-      (eww-open-file output-file)))
-
-  ;; 启动时自动设置
-  (defun my/markdown-setup ()
-    "Markdown 打开时的本地设置。"
-    ;; 折行显示
-    (visual-line-mode 1)
-    ;; 根据标题折叠大纲
-    (outline-minor-mode 1))
+  ;; markdown-view-mode / gfm-view-mode 是 read-only 渲染视图
+  ;;   n / p / f / b / u   跳转标题
+  ;;   SPC / DEL           滚动
+  ;;   q                   退出 view 模式
+  ;; 在 TUI 下直接用 Emacs 的 font-lock + 隐藏 markup, 不需要外部工具
 
   ;; ============================================
-  ;; 键绑定
+  ;; 键绑定 — 只覆盖导出/查看, 不抢 C-c C-c (view-mode 默认)
   ;; ============================================
 
-  (define-key markdown-mode-map (kbd "C-c C-p") #'my/markdown-preview-eww)
-  (define-key markdown-mode-map (kbd "C-c C-c") #'markdown-other-window))
+  (define-key markdown-mode-map (kbd "C-c C-p") #'markdown-preview)
+  (define-key markdown-mode-map (kbd "C-c C-e") #'markdown-export))
 
 ;; ============================================
-;; Tree-sitter 增强（Emacs 30+ 内置）
-;; 如果有 markdown tree-sitter 语法，用 ts 模式补充
+;; Tree-sitter 增强 (Emacs 30+)
 ;; ============================================
 
 (when (and (>= emacs-major-version 30)
+           (fboundp 'treesit-ready-p)
            (treesit-ready-p 'markdown t))
-  ;; markdown-ts-mode 提供更精确的语法高亮
   (add-to-list 'major-mode-remap-alist '(markdown-mode . markdown-ts-mode)))
 
 (provide 'config-markdown)
