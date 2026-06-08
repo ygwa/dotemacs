@@ -65,7 +65,8 @@
                   config-gui
 		  config-web
                   config-package
-                  config-markdown))
+                  config-markdown
+                  config-agent))
 
 ;; ============================================
 ;; 6. 运行期性能恢复 (启动完成后执行)
