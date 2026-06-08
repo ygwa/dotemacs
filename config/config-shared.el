@@ -99,6 +99,8 @@
      (?n aw-split-window-horz "Split Window Horizontal")
      (?v aw-split-window-vert "Split Window Vertical")
      (?b aw-switch-buffer-in-window "Select Buffer")
+     (?o ace-window-maximize-window "Maximize / Restore")
+     (?= balance-windows "Balance All")
      (?u winner-undo "Winner Undo"))))
 
 (use-package shackle
@@ -106,14 +108,29 @@
   :hook (after-init . shackle-mode)
   :custom
   (shackle-rules
-   '(("*Help*" :select t :align right :size 0.35)
-     ("*compilation*" :select nil :align bottom :size 0.2 :autoclose t)
+   '(;; 日常查询窗: 右侧弹, 选中内容
+     ("*Help*" :select t :align right :size 0.4)
+     ("*compilation*" :select nil :align bottom :size 0.25 :autoclose t)
      ("*Messages*" :select nil :align bottom :size 0.2)
-     ("*Org-roam*" :select nil :align right :size 0.3)
-     (magit-status-mode :select t :same t))))
+     ;; 出错/警告: 给大空间, 不自动关
+     ("\\*Backtrace\\*" :select t :align right :size 0.5)
+     ("\\*Warnings\\*"  :select t :align bottom :size 0.3)
+     ("\\*Pp Eval Output\\*" :select t :align right :size 0.4)
+     ;; Magit 状态窗: 复用当前窗
+     (magit-status-mode :select t :same t)
+     ;; Embark 收集器: 右侧
+     (embark-collect-mode :select t :align right :size 0.4))))
 
 (winner-mode 1)
+(setq winner-bdose 50)                   ; winner undo/redo 最多 50 步, 默认 1 太浅
 (repeat-mode 1)                          ; 按一次 M-o 进弹窗, 重复 n 一直水平分屏
+
+;; windmove: S-<arrows> 移焦点, S-M-<arrows> 移窗 (2 窗时比 M-o 更轻)
+(windmove-default-keybindings)
+(global-set-key (kbd "S-M-<left>")  #'windmove-swap-states-left)
+(global-set-key (kbd "S-M-<right>") #'windmove-swap-states-right)
+(global-set-key (kbd "S-M-<up>")    #'windmove-swap-states-up)
+(global-set-key (kbd "S-M-<down>")  #'windmove-swap-states-down)
 
 ;; ============================================
 ;; 6. nerd-icons (含 TUI 守护)
