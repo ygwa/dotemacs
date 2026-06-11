@@ -116,10 +116,12 @@
      ("\\*Backtrace\\*" :select t :align right :size 0.5)
      ("\\*Warnings\\*"  :select t :align bottom :size 0.3)
      ("\\*Pp Eval Output\\*" :select t :align right :size 0.4)
-     ;; Magit 状态窗: 复用当前窗
-     (magit-status-mode :select t :same t)
+     ;; Magit 状态窗: 右侧
+     (magit-status-mode :select t :align right :size 0.5)
      ;; Embark 收集器: 右侧
-     (embark-collect-mode :select t :align right :size 0.4))))
+     (embark-collect-mode :select t :align right :size 0.4)
+     ;; Treemacs 文件树: 左侧
+     (treemacs-mode :select t :align left :size 30))))
 
 (winner-mode 1)
 (setq winner-bdose 50)                   ; winner undo/redo 最多 50 步, 默认 1 太浅

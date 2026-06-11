@@ -37,6 +37,7 @@
 
 (use-package magit
   :ensure t
+  :bind ("C-x g" . magit-status)
   :config
   (setq magit-push-always-verify nil
         magit-revert-buffers t))
