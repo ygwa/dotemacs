@@ -78,8 +78,8 @@
 (global-set-key (kbd "C-x t d") #'treemacs-delete-other-windows)
 
 ;; 工作流布局
-(global-set-key (kbd "C-c w l") #'my/workflow-layout)
-(global-set-key (kbd "C-c w c") #'my/workflow-focus-code)
+(global-set-key (kbd "C-c f l") #'my/workflow-layout)
+(global-set-key (kbd "C-c f c") #'my/workflow-focus-code)
 
 ;; Transcript查看
 (global-set-key (kbd "C-c C-t") #'my/agent-shell-view-transcript)
