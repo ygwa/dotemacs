@@ -155,7 +155,7 @@
   :config
   (global-set-key (kbd "C-c j") 'avy-goto-char)
   (global-set-key (kbd "C-c J") 'avy-goto-line)
-  (global-set-key (kbd "C-c w") 'avy-goto-word-1))
+  (global-set-key (kbd "C-c W") 'avy-goto-word-1))
 
 ;; ============================================
 ;; 6. 环境变量
