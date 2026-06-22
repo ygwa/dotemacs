@@ -23,10 +23,10 @@
   (setq agent-shell-context-sources '(files region error line)
         ;; 跨 Emacs 重启续 session
         agent-shell-prefer-session-resume t
-        ;; TUI 下不用 viewport 交互 (它依赖 frame 像素)
-        agent-shell-prefer-viewport-interaction (display-graphic-p)
-        ;; 头样式: GUI 用图形, TUI 用纯文本
-        agent-shell-header-style (if (display-graphic-p) 'graphical 'text))
+        ;; TUI-only (2026-06): viewport 交互依赖 frame 像素, 关掉
+        agent-shell-prefer-viewport-interaction nil
+        ;; TUI-only: 头样式走纯文本
+        agent-shell-header-style 'text)
 
   :config
   ;; ============================================

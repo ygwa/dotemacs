@@ -59,10 +59,11 @@
 ;; ============================================
 
 ;; 按照逻辑顺序加载
+;; 注意: 2026-06 起本配置统一为 TUI-only (emacsclient + daemon),
+;; 早期 config-gui.el 已被删除, 不再加载.
 (mapc #'require '(config-default
 		  config-org
                   config-shared
-                  config-gui
 		  config-web
                   config-package
                   config-markdown

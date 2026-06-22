@@ -26,24 +26,14 @@
   ('gnu/linux
    (setq dired-use-ls-dired t)))
 
-(when (display-graphic-p)
-  (global-set-key (kbd "<s-return>") 'toggle-fullscreen))
-
 ;; ============================================
-;; 跨环境视觉微调 (GUI vs TUI)
+;; 视觉微调 (TUI 专属, 2026-06 起)
 ;; ============================================
+;; 统一 TUI 配置, 不再有 GUI 分支.
 
-;; 光标样式: GUI 用细竖条, TUI 用方框 (Emacs 默认)
-;; 不在 daemon/early-init 期执行, 避免 headless 启动时无 frame
+;; 光标: TUI 用 box (Emacs 默认), daemon 启动时不执行避免 headless 报错
 (unless (daemonp)
-  (setq-default cursor-type
-                (if (display-graphic-p)
-                    '(bar . 2)
-                  'box)))
-
-;; 行距: GUI 给一点呼吸感, TUI 不设置 (终端控不准)
-(when (display-graphic-p)
-  (setq-default line-spacing 0.1))
+  (setq-default cursor-type 'box))
 
 ;; ============================================
 ;; Emacs 30: 编码设置优化
