@@ -34,8 +34,6 @@ Agenda for the coming week: (a)
       Task:        2025-01-25 TODO 每周回顾 (Weekly Review)
 ```
 
-<sub>替换为 PNG 截图：启动 GUI Emacs 后执行 `screencapture -l $(osascript -e 'tell application "System Events" to tell process "Emacs" to get id of front window') docs/screenshot.png`</sub>
-
 ## 📁 目录结构
 
 ```
@@ -134,7 +132,7 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 
 | 键 | 命令 |
 |---|---|
-| `C-c c` | `org-capture`（`t` 待办 / `i` Inbox / `b` 博客）|
+| `C-c c` | `org-capture`（`i` Inbox）|
 | `C-c a` | `org-agenda` |
 | `C-c l` | `org-store-link` |
 
