@@ -216,16 +216,18 @@ daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
   (setq dashboard-navigator-buttons
         ;; TUI 下 emoji 渲染不可靠, 用纯文本替代
         (let ((icon-fmt (lambda (g text) (if (display-graphic-p) g text))))
-          `(;; 第一排: 知识管理流
-            ((,(funcall icon-fmt "📥" "[i]") "Inbox" "捕捉想法"
-              (lambda (&rest _) (find-file my/org-inbox-file)))
-             (,(funcall icon-fmt "🔭" "[s]") "Studies" "专题研究"
-              (lambda (&rest _) (find-file my/org-projects-file)))
-             (,(funcall icon-fmt "🏛️" "[p]") "Principles" "底层模型"
-              (lambda (&rest _) (find-file my/org-notes-file))))
+          `(;; 第一排: 常用入口
+            ((,(funcall icon-fmt "📥" "[i]") "Inbox" "打开 org inbox"
+              (lambda (&rest _) (find-file (expand-file-name "inbox.org" my/org-root-dir))))
+             (,(funcall icon-fmt "🔍" "[/]") "Search" "consult-recent-file"
+              (lambda (&rest _) (call-interactively #'consult-recent-file)))
+             (,(funcall icon-fmt "📁" "[f]") "Find" "consult-git-grep"
+              (lambda (&rest _) (call-interactively #'consult-git-grep))))
             ;; 第二排: 开发流
             ((,(funcall icon-fmt "💻" "[c]") "Code" "编程项目"
-              (lambda (&rest _) (project-switch-project)))))))
+              (lambda (&rest _) (project-switch-project)))
+             (,(funcall icon-fmt "🌲" "[t]") "Tree" "Treemacs 文件树"
+              (lambda (&rest _) (treemacs-select-window)))))))
   ;; 替代 dashboard-setup-startup-hook, 避免 init-info 重复显示
   (when (< (length command-line-args) 2)
     (add-hook 'window-size-change-functions #'dashboard-resize-on-hook 100)
