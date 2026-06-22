@@ -25,6 +25,8 @@ org-roam.db
 tree-sitter
 var/
 /.agent-shell/
+/.omo                    # OpenCode run-continuation tool data
+.omo/
 agent/
 *.elc
 *.eld
