@@ -1,9 +1,12 @@
 # auto-save 文件已迁移到 var/auto-save-list/ (被下方 var/ 行覆盖)
+# 根目录的 auto-save-list/ 是历史残留空目录, 配置已重定向
 elpa/
 eshell/
 recentf
 url
 projectile-bookmarks.eld
+projects               # projectile 时代产物, 内置 project.el 不需要
+auto-save-list         # 历史残留, 现写到 var/auto-save-list/
 bookmarks
 .DS_Store
 network-security.data
