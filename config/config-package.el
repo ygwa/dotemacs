@@ -236,6 +236,86 @@
   ;; 否则首次打开 .rs 时 hint 还没注册, 第一次无提示
   )
 
+;; ============================================
+;; 10. Jinx 拼写检查 (替代 flyspell)
+;; ============================================
+;; 依赖: brew install enchant2 pkgconf  (macOS 编译 jinx-mod.so 所需)
+;; 作者: Daniel Mendler (vertico/corfu/consult/orderless 同一人)
+;; GNU ELPA 收录, 月度发版, 零 open issues
+;; TUI 完美支持 (C 模块加速)
+
+(use-package jinx
+  :ensure t
+  :defer t  ; 延迟到首次拼写相关调用, 不影响启动
+  :bind ([remap ispell-word] . jinx-correct)  ; M-$ 直接纠正
+  :hook ((text-mode prog-mode) . jinx-mode)   ; text + 代码注释都拼写检查
+  :config
+  ;; 排除 org/LaTeX 的字体锁 face, 避免语法标记被误判为错字
+  (cl-callf
+      (lambda (pl)
+        (delete-dups
+         (append '(org-block font-lock-comment-face) pl)))
+      (alist-get 'org-mode jinx-exclude-faces))
+  (cl-callf
+      (lambda (pl)
+        (delete-dups
+         (append '(font-lock-constant-face TeX-fold-unfolded-face) pl)))
+      (alist-get 'tex-mode jinx-exclude-faces)))
+
+;; ============================================
+;; 11. Dape 调试器 (DAP 协议, eglot 哲学)
+;; ============================================
+;; 替代 dap-mode, GNU ELPA 收录, 月度发版
+;; TUI 完美支持
+;; 依赖各语言 DAP adapter 二进制 (debugpy / lldb-dap / vscode-js-debug 等)
+;;
+;; 快捷键:
+;;   <f5>        dape              启动调试 (根据 dir-locals 配置)
+;;   M-<f5>      dape-hydra/body   速查表 (下一步/进入/出/继续/断点等)
+;;   C-c d b     dape-breakpoint-toggle  当前行切换断点
+
+(use-package dape
+  :ensure t
+  :defer t
+  :bind (("<f5>" . dape)
+         ("M-<f5>" . dape-hydra/body)
+         ("C-c d b" . dape-breakpoint-toggle))
+  :config
+  ;; 启动前自动保存 buffer (解释型语言调试需要磁盘上是最新的)
+  (add-hook 'dape-on-start-hooks
+            (defun my/dape--save-on-start ()
+              (save-some-buffers t t)))
+  ;; 断点持久化: 启动时加载, 退出时保存
+  (dape-breakpoint-load)
+  (add-hook 'kill-emacs-hook #'dape-breakpoint-save)
+
+  ;; Python: debugpy (pip install debugpy)
+  (when (executable-find "python")
+    (add-to-list 'dape-adapters
+                 '(python
+                   (cwd . default-directory)
+                   (host . "localhost")
+                   (port . 5678))))
+
+  ;; Node/TypeScript: vscode-js-debug (npm i -g vscode-js-debug)
+  (when (executable-find "node")
+    (add-to-list 'dape-adapters
+                 '(node-js
+                   (program . "vscode-js-debug")
+                   (args . ("--server" "--port=0"))
+                   (request . "attach")
+                   (cwd . default-directory))))
+
+  ;; Rust: lldb-dap (brew install lldb-dap)
+  (when (executable-find "lldb-dap")
+    (add-to-list 'dape-adapters
+                 '(lldb-dap
+                   (program . "lldb-dap")
+                   (request . "launch")
+                   (cwd . default-directory)
+                   (lldb-dap-path-command . "lldb-dap")
+                   (lldb-dap-launch-configuration . "launch.json")))))
+
 ;; Rust 安装提示 (hook 在 use-package 外顶层注册, 不依赖 eglot 懒加载).
 ;; 第一次打开 .rs 文件时若 rust-analyzer 不在 PATH, 打印按 system-type 分平台的安装命令.
 (dolist (hook '(rust-mode-hook rust-ts-mode-hook))
