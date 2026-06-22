@@ -40,9 +40,6 @@
 ;; 禁用启动时的自动包初始化 (在 init.el 中由 use-package 接管)
 (setq package-enable-at-startup nil)
 
-;; 设置自定义变量文件的存储路径，避免其内容写进 init.el
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-
 ;; ============================================
 ;; 4. Emacs 30 原生编译 (Native Comp) 优化
 ;; ============================================

@@ -112,7 +112,6 @@
 
 (use-package consult
   :ensure t
-  :demand t
   :config
   (global-set-key (kbd "C-s") 'consult-line)
   (global-set-key (kbd "C-M-s") 'consult-line-multi)
@@ -133,7 +132,6 @@
 
 (use-package embark
   :ensure t
-  :demand t
   :config
   (global-set-key (kbd "C-.") 'embark-act)
   (global-set-key (kbd "C-;") 'embark-dwim)
@@ -141,7 +139,7 @@
 
 (use-package embark-consult
   :ensure t
-  :after (embark consult)
+  :after consult          ; embark 已在 :demand t, 只需等 consult
   :hook (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package marginalia
@@ -151,7 +149,6 @@
 
 (use-package avy
   :ensure t
-  :demand t
   :config
   (global-set-key (kbd "C-c j") 'avy-goto-char)
   (global-set-key (kbd "C-c J") 'avy-goto-line)
@@ -160,7 +157,8 @@
 ;; ============================================
 ;; 6. 环境变量
 ;; ============================================
-;; 注意: exec-path-from-shell 已在 init.el 中统一配置
+;; 注意: exec-path-from-shell 在 init.el 第 4 节统一配置,
+;; 这里只放编程工具.
 
 ;; ============================================
 ;; 7. 撤销可视化
