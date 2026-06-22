@@ -191,14 +191,14 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
   (dashboard-set-navigator nil)
   (dashboard-set-footer nil)
   (dashboard-week-agenda-trim-leading-zero t)
+  ;; TUI 关掉 footer (dashboard-set-footer nil), 列表里不再调用 dashboard-insert-footer
   (dashboard-startupify-list '(dashboard-insert-banner
                                dashboard-insert-newline
                                dashboard-insert-banner-title
                                dashboard-insert-newline
                                dashboard-insert-init-info
                                dashboard-insert-items
-                               dashboard-insert-newline
-                               dashboard-insert-footer))
+                               dashboard-insert-newline))
   :config
   ;; TUI: 走 'ascii' banner (避免 figlet 断行)
   (setq dashboard-startup-banner 'ascii)
