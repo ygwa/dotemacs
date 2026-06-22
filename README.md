@@ -204,6 +204,7 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 
 `docs/` 目录下：
 
+- [全局快捷键速查表](./docs/keybindings.md) — 所有键位单一真值源
 - [使用场景索引](./docs/usage-scenarios.md)
 - [Rust 开发指南](./docs/rust-development.md) — eglot + rust-analyzer
 - [Magit Git 管理指南](./docs/magit-guide.md)
