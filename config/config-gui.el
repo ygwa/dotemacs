@@ -34,21 +34,21 @@
   "中文字体 (按 system-type 选择 fallback)。nil 表示不配置。")
 
 (defun my/setup-gui-fonts ()
-  "配置 GUI 字体 (等宽 + CJK fallback)。"
-  (set-face-attribute 'default nil :font my/monospace-font)
-  (when my/cjk-font-family
+  "配置 GUI 字体 (等宽 + CJK fallback)。
+TUI frame 调用时是 noop (字体由终端控制, 我们主动 reset 回 nil
+避免上次 GUI frame 残留的字体污染这个 frame)。"
+  (set-face-attribute 'default nil :font
+                      (if (display-graphic-p) my/monospace-font nil))
+  (when (and (display-graphic-p) my/cjk-font-family)
     (dolist (charset '(han kana symbol cjk-misc bopomofo))
       (set-fontset-font t charset (font-spec :family my/cjk-font-family)))
     (add-to-list 'face-font-rescale-alist (cons my/cjk-font-family 1.1))))
 
-;; 终端下不设置字体 (使用终端自己的字体)
+;; 每个新 frame 都跑一次 (daemon 同时服务 GUI+TUI client 时, TUI 拿回默认字体)
 (if (daemonp)
-    (add-hook 'server-after-make-frame-hook
-              (lambda ()
-                (when (display-graphic-p)
-                  (my/setup-gui-fonts))))
-  (when (display-graphic-p)
-    (my/setup-gui-fonts)))
+    (add-hook 'after-make-frame-functions
+              (lambda (_frame) (my/setup-gui-fonts)))
+  (my/setup-gui-fonts))
 
 ;; ============================================
 ;; 4. macOS 暗色模式同步 (daemon 下也工作)
@@ -59,12 +59,14 @@
   (add-hook 'ns-system-appearance-change-functions
             (lambda (appearance)
               (let* ((dark (eq appearance 'dark))
-                     (new-theme (if dark 'doom-one 'doom-one-light)))
+                     (new-flavor (if dark 'mocha 'latte)))
                 (when (and (display-graphic-p)
-                           (not (equal my/theme new-theme)))
-                  (setq my/theme new-theme)
+                           (not (eq my/theme-flavor new-flavor)))
+                  (setq my/theme-flavor new-flavor)
+                  (setq catppuccin-flavor new-flavor)
+                  (catppuccin-reload)      ; 触发 face 重新生成
                   (mapc #'disable-theme custom-enabled-themes)
-                  (load-theme new-theme t))))))
+                  (load-theme 'catppuccin t))))))
 
 (context-menu-mode 1)                   ; GUI 右键上下文菜单 (Emacs 29+)
 
