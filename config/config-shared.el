@@ -188,15 +188,13 @@ daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
                      (agenda   . 5)))
   (dashboard-projects-backend 'project-el)
   ;; dashboard 布局分 4 块: banner / navigator / items / footer
-  ;; 这里只开 navigator (快捷按钮), 关 footer (版权/统计 — 个人用不需要)
-  (dashboard-set-navigator t)
+  ;; TUI-only 目标: 关掉 navigator (快捷按钮在窄终端意义不大) + footer (版权/统计)
+  (dashboard-set-navigator nil)
   (dashboard-set-footer nil)
   (dashboard-week-agenda-trim-leading-zero t)
   (dashboard-startupify-list '(dashboard-insert-banner
                                dashboard-insert-newline
                                dashboard-insert-banner-title
-                               dashboard-insert-newline
-                               dashboard-insert-navigator
                                dashboard-insert-newline
                                dashboard-insert-init-info
                                dashboard-insert-items
@@ -212,22 +210,7 @@ daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
            (format "✦  %d packages  ·  loaded in %s"
                    (length package-activated-list)
                    (emacs-init-time))
-           'face 'font-lock-comment-face)))
-  (setq dashboard-navigator-buttons
-        ;; TUI 下 emoji 渲染不可靠, 用纯文本替代
-        (let ((icon-fmt (lambda (g text) (if (display-graphic-p) g text))))
-          `(;; 第一排: 常用入口
-            ((,(funcall icon-fmt "📥" "[i]") "Inbox" "打开 org inbox"
-              (lambda (&rest _) (find-file (expand-file-name "inbox.org" my/org-root-dir))))
-             (,(funcall icon-fmt "🔍" "[/]") "Search" "consult-recent-file"
-              (lambda (&rest _) (call-interactively #'consult-recent-file)))
-             (,(funcall icon-fmt "📁" "[f]") "Find" "consult-git-grep"
-              (lambda (&rest _) (call-interactively #'consult-git-grep))))
-            ;; 第二排: 开发流
-            ((,(funcall icon-fmt "💻" "[c]") "Code" "编程项目"
-              (lambda (&rest _) (project-switch-project)))
-             (,(funcall icon-fmt "🌲" "[t]") "Tree" "Treemacs 文件树"
-              (lambda (&rest _) (treemacs-select-window)))))))
+            'face 'font-lock-comment-face)))
   ;; 替代 dashboard-setup-startup-hook, 避免 init-info 重复显示
   (when (< (length command-line-args) 2)
     (add-hook 'window-size-change-functions #'dashboard-resize-on-hook 100)
