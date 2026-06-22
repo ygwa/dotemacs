@@ -60,9 +60,7 @@ Agenda for the coming week: (a)
 ```bash
 git clone <repo> ~/.emacs.d
 # 启动 Emacs, 包会自动安装
-# 推荐安装 (跨平台): ripgrep, fd, pandoc, plantuml, graphviz (dot)
-# macOS GUI:       brew install ripgrep pandoc plantuml graphviz
-# Debian/Ubuntu:   sudo apt install ripgrep pandoc plantuml graphviz
+# 完整外部依赖清单见下"📦 外部依赖"章
 ```
 
 启动后第一次会从 USTC 镜像下载 ~50 个包，耗时约 30s-2min。
@@ -157,6 +155,25 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 | 键 | 命令 |
 |---|---|
 | `C-c y` | `youdao-dictionary-search-at-point+` |
+
+## 📦 外部依赖
+
+以下二进制是配置**真实守护**的（`executable-find` 检测，缺失时优雅降级）——只装你用到的语言/工作流对应的那几个即可。
+
+| 二进制 | 触发什么 | 缺失时行为 | 安装（macOS / Debian-Ubuntu）|
+|---|---|---|---|
+| `pandoc` | Markdown export (gfm → html5) | 静默回退，能编辑不能导出 | `brew install pandoc` / `apt install pandoc` |
+| `rust-analyzer` | Rust LSP（eglot）| 首次开 .rs 时 *Messages* 提示安装命令 | `brew install rust-analyzer` 或 `rustup component add rust-analyzer` |
+| `vtsls` | TypeScript LSP（eglot）| 静默回退到 `typescript-language-server` | `npm i -g vtsls`（或 `typescript-language-server`）|
+| `python` | Dape Python 调试（debugpy）| 静默跳过，Python 调试不工作 | 系统自带；`pip install debugpy` 装 DAP adapter |
+| `node` | Dape Node.js 调试（vscode-js-debug）| 静默跳过，Node 调试不工作 | `brew install node` / `apt install nodejs`；`npm i -g vscode-js-debug` |
+| `lldb-dap` | Dape Rust 调试 | 静默跳过，Rust 调试不工作 | `brew install lldb-dap`（LLVM 自带）|
+
+**可选工具**（README 之前提过但配置里不依赖）：
+- `ripgrep` — `C-c k` 走 `consult-ripgrep` 速度比 git grep 快 10x
+- `plantuml` / `graphviz (dot)` — Org Babel 代码块出图
+
+**没装某个外部二进制不会让启动失败**，只是对应功能降级。
 
 ## 📦 主要依赖
 
