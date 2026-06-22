@@ -11,19 +11,14 @@
   (setq treemacs-width 30
         treemacs-is-never-other-window t
         treemacs-show-hidden-files t
-        treemacs-no-png-images (not (display-graphic-p))
+        ;; TUI-only (2026-06): 永远不用 PNG 图标
+        treemacs-no-png-images t
         treemacs-sorting 'alphabetic-asc
         treemacs-follow-after-init t
         treemacs-collapse-dirs 3
         treemacs-silence-other-window-warning t)
   (treemacs-follow-mode t)
   (treemacs-filewatch-mode t))
-
-(use-package treemacs-nerd-icons
-  :ensure t
-  :after (treemacs nerd-icons)
-  :config
-  (treemacs-load-theme "nerd-icons"))
 
 (use-package treemacs-magit
   :ensure t
@@ -36,8 +31,8 @@
 (defun my/workflow-layout ()
   "设置AI开发工作流布局：左侧treemacs，右侧代码+AI面板"
   (interactive)
-  (when (fboundp 'shackle-close-all-windows)
-    (shackle-close-all-windows))
+  ;; 先清空所有窗口, shackle autoclose 弹的窗也会一起被清掉
+  (delete-other-windows)
   (treemacs)
   (other-window 1)
   (agent-shell-toggle))
@@ -75,8 +70,6 @@
 (global-set-key (kbd "C-c f c")
                 (lambda ()
                   (interactive)
-                  (when (fboundp 'shackle-close-all-windows)
-                    (shackle-close-all-windows))
                   (delete-other-windows)))
 
 ;; Transcript查看

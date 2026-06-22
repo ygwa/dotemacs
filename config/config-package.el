@@ -29,7 +29,7 @@
   :ensure t
   :init
   (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'emacs-lisp-mode-hook 'rainbow-mode))
+  (add-hook 'emacs-lisp-mode-hook #'rainbow-mode))
 
 ;; ============================================
 ;; 2. Git 集成
@@ -231,10 +231,27 @@
   (define-key eglot-mode-map (kbd "C-c s d") 'eglot-find-declaration)
   (define-key eglot-mode-map (kbd "C-c s i") 'eglot-find-implementation)
   (define-key eglot-mode-map (kbd "C-c s t") 'eglot-find-typeDefinition)
-  
+
   ;; Rust 安装提示 hook 注册在 use-package 外顶层 (见下方 dolist), 不依赖 eglot 懒加载,
   ;; 否则首次打开 .rs 时 hint 还没注册, 第一次无提示
   )
+
+;; ============================================
+;; 9b. consult-eglot (LSP 符号搜索)
+;; ============================================
+;; 打通 eglot LSP workspace/symbol 与 consult,
+;; 在项目里按符号搜 (跨文件), 区别于 consult-git-grep (按文本).
+;; C-c e s  搜项目符号 (LSP workspace/symbol)
+;;
+;; consult-eglot 只有一个公共命令 `consult-eglot-symbols',
+;; 内部已处理"跨项目"vs"单文件"选择 (有 project 时查项目 server, 无时查当前 server).
+;; 想再细粒度区分, 走 C-c s d/i/t (eglot 跳声明/实现/类型).
+
+(use-package consult-eglot
+  :ensure t
+  :defer t
+  :after (consult eglot)
+  :bind ("C-c e s" . consult-eglot-symbols))
 
 ;; ============================================
 ;; 10. Jinx 拼写检查 (替代 flyspell)
@@ -248,7 +265,20 @@
   :ensure t
   :defer t  ; 延迟到首次拼写相关调用, 不影响启动
   :bind ([remap ispell-word] . jinx-correct)  ; M-$ 直接纠正
-  :hook ((text-mode prog-mode) . jinx-mode)   ; text + 代码注释都拼写检查
+  :init
+  ;; jinx 强依赖 enchant-2, 没装 brew install enchant2 pkgconf 时 jinx-mode 会抛
+  ;; Compilation of jinx-mod.dylib failed, 中断 prog-mode-hook 链 → 派生 mode
+  ;; (emacs-lisp-mode 等) 的 font-lock 不跑. condition-case 包住, 失败时仅
+  ;; *Messages* 提示, 不污染其它 hook.
+  (dolist (hook '(text-mode-hook prog-mode-hook))
+    (add-hook hook
+              (lambda ()
+                (condition-case err
+                    (jinx-mode 1)
+                  (error
+                   (message "Jinx 加载失败: %S (运行 `brew install enchant2 pkgconf` 修复)" err)
+                   (jinx-mode -1))))))
+  :config
   :config
   ;; 排除 org/LaTeX 的字体锁 face, 避免语法标记被误判为错字
   (cl-callf

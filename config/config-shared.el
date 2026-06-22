@@ -1,6 +1,6 @@
-;;; config-shared.el --- Cross-platform UI (GUI + TUI) -*- lexical-binding: t; -*-
-;; 所有视觉配置已用 (display-graphic-p) / (executable-find) 守护, TUI 下自动降级
-;; 加载顺序: 本文件必须在 config-gui.el 之前 (gui 依赖 my/theme)
+;;; config-shared.el --- TUI-only cross-platform UI -*- lexical-binding: t; -*-
+;; 2026-06 起: 统一 TUI 配置 (emacsclient + daemon),
+;; 不再有 (display-graphic-p) 双分支. 所有视觉配置按 24-bit color TUI 终端优化.
 
 ;; ============================================
 ;; 1. 基础 UI 行为
@@ -33,12 +33,11 @@
 (add-hook 'Info-mode-hook #'visual-line-mode)
 
 ;; ============================================
-;; 3. 主题 (catppuccin, GUI/TUI 通用)
+;; 3. 主题 (catppuccin mocha)
 ;; ============================================
-;; catppuccin 包只暴露单一主题名 `catppuccin', flavor 通过
-;; `catppuccin-flavor' 切换 (mocha / macchiato / frappe / latte).
-;; 重新加载用 `catppuccin-reload'.
-;; Mac 暗色模式 hook 在 config-gui.el 中挂
+;; TUI 24-bit color 终端完美支持 catppuccin mocha.
+;; `catppuccin-flavor' 切换其它 flavor 后需 `catppuccin-reload' 重生成 face.
+;; 旧版 Mac 暗色模式同步 hook 已删除 (config-gui.el 整体下线).
 
 (use-package catppuccin-theme
   :ensure t
@@ -46,13 +45,13 @@
   (catppuccin-flavor 'mocha))
 
 (defvar my/theme-flavor 'mocha
-  "当前 catppuccin flavor。GUI/TUI 通用。
-切换后需 `catppuccin-reload' 重新生成主题。")
+  "当前 catppuccin flavor.
+切换后需 `catppuccin-reload' 重新生成主题.")
 
-(defun my/load-theme (&optional _frame)
-  "加载并启用 `catppuccin' 主题, 应用 `my/theme-flavor'。
-daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
-`server-after-make-frame-hook'。"
+(defun my/load-theme ()
+  "加载并启用 `catppuccin' 主题, 应用 `my/theme-flavor'.
+daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
+否则 frame 未创建时 load-theme 会用错 frame 参数."
   (when (and (require 'catppuccin-theme nil 'noerror)
              (locate-library "catppuccin-theme"))
     (setq catppuccin-flavor my/theme-flavor)
@@ -60,32 +59,34 @@ daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
     (mapc #'disable-theme custom-enabled-themes)
     (load-theme 'catppuccin t)))
 
+;; daemon 永远走 hook 路径; 前台启动直接调一次
 (if (daemonp)
     (add-hook 'server-after-make-frame-hook #'my/load-theme)
   (my/load-theme))
 
 ;; ============================================
-;; 4. Mode-line (doom-modeline) — 跨环境现代 mode-line
+;; 4. Mode-line (doom-modeline) — TUI 字符级配置
 ;; ============================================
-;; :init 阶段启用, 否则首屏显示默认 mode-line
+;; TUI 终端不渲染像素图标, 关掉所有 icon/unicode 渲染避免方框/断行.
+;; 字符级 fallback 仍然清晰可读.
 
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
   :custom
-  ;; 高度 (像素). GUI 给 25, TUI 自动降到 20
-  (doom-modeline-height (if (display-graphic-p) 25 20))
+  ;; 高度 (像素). TUI 统一 20 像素 (字符模式两行高)
+  (doom-modeline-height 20)
   (doom-modeline-bar-width 4)
-  ;; TUI 守护: 像素图标 / unicode 箭头在窄终端会渲染为方框或断行
-  (doom-modeline-icon (display-graphic-p))
-  (doom-modeline-unicode (display-graphic-p))
-  (doom-modeline-major-mode-icon (display-graphic-p))
-  (doom-modeline-major-mode-color-icon (display-graphic-p))
-  (doom-modeline-buffer-state-icon (display-graphic-p))
-  (doom-modeline-buffer-modification-icon (display-graphic-p))
-  (doom-modeline-lsp-icon (display-graphic-p))
-  (doom-modeline-time-icon (display-graphic-p))
-  (doom-modeline-modal-icon (display-graphic-p))
+  ;; TUI: 全部关掉像素/unicode 图标
+  (doom-modeline-icon nil)
+  (doom-modeline-unicode nil)
+  (doom-modeline-major-mode-icon nil)
+  (doom-modeline-major-mode-color-icon nil)
+  (doom-modeline-buffer-state-icon nil)
+  (doom-modeline-buffer-modification-icon nil)
+  (doom-modeline-lsp-icon nil)
+  (doom-modeline-time-icon nil)
+  (doom-modeline-modal-icon nil)
   (doom-modeline-time t)
   (doom-modeline-env t)
   (doom-modeline-buffer-encoding nil)
@@ -118,7 +119,8 @@ daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
 
 (use-package shackle
   :ensure t
-  :hook (after-init . shackle-mode)
+  :defer t
+  :config (shackle-mode 1)
   :custom
   (shackle-rules
    '(;; 日常查询窗: 右侧弹, 选中内容
@@ -148,13 +150,11 @@ daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
 (global-set-key (kbd "S-M-<down>")  #'windmove-swap-states-down)
 
 ;; ============================================
-;; 6. nerd-icons (含 TUI 守护)
+;; 6. nerd-icons — TUI 下不安装主包, 仅用 dired unicode fallback
 ;; ============================================
-;; TUI 下字符级 fallback 仍占启动时间, 干脆不加载
-
-(use-package nerd-icons
-  :ensure t
-  :if (display-graphic-p))
+;; TUI 不渲染 Nerd Font 像素图标, 主包 (nerd-icons.el) 安装但不激活也无意义.
+;; nerd-icons-dired / nerd-icons-corfu 内部自带 unicode 字符级 fallback,
+;; 不依赖主包即可在 TUI 下显示文字符号 (例如 dired 中显示 [DIR]).
 
 (use-package nerd-icons-dired
   :ensure t
@@ -164,12 +164,12 @@ daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
   :ensure t
   :after corfu
   :config
-  (when (display-graphic-p)
-    (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)))
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 ;; ============================================
-;; 7. 启动仪表盘 (Dashboard) - 双流向工作台版
+;; 7. 启动仪表盘 (Dashboard) — TUI 字符级
 ;; ============================================
+;; 不用 Nerd Font 图标, banner 走 ascii (figlet 在窄终端会断行).
 
 (use-package dashboard
   :ensure t
@@ -177,18 +177,17 @@ daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
   (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
   (dashboard-banner-logo-title "Thinking & Coding - 你的第二大脑")
   (dashboard-center-content t)
-  (dashboard-display-icons-p (display-graphic-p))
-  (dashboard-icon-type (and (display-graphic-p) 'nerd-icons))
-  (dashboard-set-heading-icons (display-graphic-p))
-  (dashboard-set-file-icons (display-graphic-p))
+  ;; TUI: 全部关掉 nerd-icons, 走 unicode 字符级
+  (dashboard-display-icons-p nil)
+  (dashboard-icon-type nil)
+  (dashboard-set-heading-icons nil)
+  (dashboard-set-file-icons nil)
   ;; dashboard-items 是 alist: '(item-type . count), 顺序即渲染顺序.
-  ;; dashboard 包默认 bookmarks, 这里换成 recents/projects/agenda (个人偏好).
   (dashboard-items '((recents  . 5)
                      (projects . 5)
                      (agenda   . 5)))
   (dashboard-projects-backend 'project-el)
-  ;; dashboard 布局分 4 块: banner / navigator / items / footer
-  ;; TUI-only 目标: 关掉 navigator (快捷按钮在窄终端意义不大) + footer (版权/统计)
+  ;; TUI 优化: 关掉 navigator (快捷按钮在窄终端意义不大) + footer (版权/统计)
   (dashboard-set-navigator nil)
   (dashboard-set-footer nil)
   (dashboard-week-agenda-trim-leading-zero t)
@@ -201,16 +200,15 @@ daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
                                dashboard-insert-newline
                                dashboard-insert-footer))
   :config
-  ;; Banner 适配: GUI 用 official, 终端用 'ascii (figlet 在窄终端会断行)
-  (setq dashboard-startup-banner
-        (if (display-graphic-p) 'official 'ascii))
+  ;; TUI: 走 'ascii' banner (避免 figlet 断行)
+  (setq dashboard-startup-banner 'ascii)
   (setq dashboard-init-info
         (lambda ()
           (propertize
            (format "✦  %d packages  ·  loaded in %s"
                    (length package-activated-list)
                    (emacs-init-time))
-            'face 'font-lock-comment-face)))
+           'face 'font-lock-comment-face)))
   ;; 替代 dashboard-setup-startup-hook, 避免 init-info 重复显示
   (when (< (length command-line-args) 2)
     (add-hook 'window-size-change-functions #'dashboard-resize-on-hook 100)
