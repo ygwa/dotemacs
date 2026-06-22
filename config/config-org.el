@@ -8,15 +8,37 @@
 ;; ~/Documents 是 macOS 默认个人目录, 开启 iCloud 同步后 org 文件
 ;; 会自动跨设备; 非 macOS 用户可改为 ~/org 或 ~/.emacs.d/org.
 
-(defvar my/org-root-dir (expand-file-name "~/Documents/org/"))
+(defcustom my/org-root-dir (expand-file-name "~/Documents/org/")
+  "Org 模式根目录. dashboard / capture 都引用此路径.
+macOS 用户可设为 ~/Documents/org (iCloud 同步), Linux/Windows 用 ~/org.
+M-x customize-group my-config 改."
+  :type 'directory
+  :group 'my-config)
 
 (unless (file-exists-p my/org-root-dir)
   (make-directory my/org-root-dir t))
 
-(defvar my/org-inbox-file    (expand-file-name "inbox.org"    my/org-root-dir))
-(defvar my/org-todo-file     (expand-file-name "todos.org"    my/org-root-dir))
-(defvar my/org-projects-file (expand-file-name "projects.org" my/org-root-dir))
-(defvar my/org-notes-file    (expand-file-name "notes.org"    my/org-root-dir))
+(defcustom my/org-inbox-file (expand-file-name "inbox.org" my/org-root-dir)
+  "Inbox 文件路径, 默认 my/org-root-dir/inbox.org.
+快速捕获想法用."
+  :type 'file
+  :group 'my-config)
+
+(defcustom my/org-todo-file (expand-file-name "todos.org" my/org-root-dir)
+  "Todo 文件路径, 默认 my/org-root-dir/todos.org.
+C-c c t 模板写入此处."
+  :type 'file
+  :group 'my-config)
+
+(defcustom my/org-projects-file (expand-file-name "projects.org" my/org-root-dir)
+  "Projects 文件路径, 默认 my/org-root-dir/projects.org."
+  :type 'file
+  :group 'my-config)
+
+(defcustom my/org-notes-file (expand-file-name "notes.org" my/org-root-dir)
+  "Notes 文件路径, 默认 my/org-root-dir/notes.org."
+  :type 'file
+  :group 'my-config)
 
 ;; ============================================
 ;; 1. Org 基础行为

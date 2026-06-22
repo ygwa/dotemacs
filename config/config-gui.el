@@ -21,17 +21,24 @@
 ;; 3. 字体与中文排版 (跨平台 fallback)
 ;; ============================================
 
-(defvar my/monospace-font
+(defcustom my/monospace-font
   (if (eq system-type 'windows-nt) "Monospace-14" "JetBrains Mono-14")
-  "等宽字体。Windows 用系统 Monospace, 其他平台用 JetBrains Mono。")
+  "等宽字体。Windows 用系统 Monospace, 其他平台用 JetBrains Mono。
+M-x customize-group my-config 改, 然后 M-x my/setup-gui-fonts 或重启 Emacs 生效。"
+  :type 'string
+  :group 'my-config)
 
-(defvar my/cjk-font-family
+(defcustom my/cjk-font-family
   (pcase system-type
     ('darwin "Hiragino Sans GB")
     ('gnu/linux "Noto Sans CJK SC")
     ('windows-nt "Microsoft YaHei")
     (_ nil))
-  "中文字体 (按 system-type 选择 fallback)。nil 表示不配置。")
+  "中文字体 (按 system-type 选择 fallback)。nil 表示不配置 CJK fontset。
+M-x customize-group my-config 改。"
+  :type '(choice (const :tag "不配置" nil)
+                 (string :tag "字体名"))
+  :group 'my-config)
 
 (defun my/setup-gui-fonts ()
   "配置 GUI 字体 (等宽 + CJK fallback)。
