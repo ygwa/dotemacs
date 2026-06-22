@@ -10,14 +10,6 @@
 ;; Emacs 30: 使用空格缩进（更现代的做法）
 (setq indent-tabs-mode nil) ;; for space-based indentation
 
-;; fullscreen
-(defun toggle-fullscreen ()
-  "Toggle full screen"
-  (interactive)
-  (set-frame-parameter
-   nil 'fullscreen
-   (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
-
 ;; dired: macOS 的 ls 不支持 --dired，GNU/Linux 默认支持
 (pcase system-type
   ('darwin
