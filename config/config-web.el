@@ -14,21 +14,18 @@
   (add-to-list 'auto-mode-alist '("\\.mjs\\'" . js-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.cjs\\'" . js-ts-mode))
 
-  ;; 提示用户安装 tree-sitter 语法库
-  (defun my/check-treesit-grammar (mode grammar)
-    "检查并提示安装 tree-sitter 语法库。"
-    (add-hook mode
+  ;; 提示用户安装 tree-sitter 语法库 (5 种, 用 alist 平铺避免重复 lambda)
+  (dolist (pair '((typescript-ts-mode-hook . typescript)
+                  (tsx-ts-mode-hook        . tsx)
+                  (js-ts-mode-hook         . javascript)
+                  (css-ts-mode-hook        . css)
+                  (json-ts-mode-hook       . json)))
+    (add-hook (car pair)
               (lambda ()
                 (when (and (fboundp 'treesit-ready-p)
-                           (not (treesit-ready-p grammar t)))
+                           (not (treesit-ready-p (cdr pair) t)))
                   (message "提示: %s Tree-sitter 语法库未安装。运行 M-x treesit-install-language-grammar RET %s RET 安装。"
-                           grammar grammar)))))
-  
-  (my/check-treesit-grammar 'typescript-ts-mode-hook 'typescript)
-  (my/check-treesit-grammar 'tsx-ts-mode-hook 'tsx)
-  (my/check-treesit-grammar 'js-ts-mode-hook 'javascript)
-  (my/check-treesit-grammar 'css-ts-mode-hook 'css)
-  (my/check-treesit-grammar 'json-ts-mode-hook 'json))
+                           (cdr pair) (cdr pair)))))))
 
 ;; ============================================
 ;; 2. Tree-sitter 语法库源配置
@@ -133,49 +130,39 @@
 ;; 5. 前端开发辅助功能
 ;; ============================================
 
-;; 缩进设置
-(defun my/web-mode-setup ()
-  "Web 开发模式通用设置。"
-  (setq-local indent-tabs-mode nil)
-  (setq-local tab-width 2)
-  (setq-local js-indent-level 2)
-  (setq-local typescript-ts-mode-indent-offset 2)
-  (setq-local css-indent-offset 2))
+;; 缩进设置 (4 种 web mode 共享同一组 indent 设置)
+(dolist (hook '(typescript-ts-mode-hook tsx-ts-mode-hook js-ts-mode-hook css-ts-mode-hook))
+  (add-hook hook
+            (lambda ()
+              (setq-local indent-tabs-mode nil
+                            tab-width 2
+                            js-indent-level 2
+                            typescript-ts-mode-indent-offset 2
+                            css-indent-offset 2))))
 
-(add-hook 'typescript-ts-mode-hook #'my/web-mode-setup)
-(add-hook 'tsx-ts-mode-hook #'my/web-mode-setup)
-(add-hook 'js-ts-mode-hook #'my/web-mode-setup)
-(add-hook 'css-ts-mode-hook #'my/web-mode-setup)
-
-;; npm/yarn/pnpm 脚本运行
+;; npm/yarn/pnpm 脚本运行 (按 lockfile 自动选包管理器, 解析 package.json 拿 scripts)
 (defun my/npm-run ()
-  "运行 npm/yarn/pnpm 脚本。"
+  "运行 npm/yarn/pnpm 脚本。按 lockfile 自动选包管理器。"
   (interactive)
   (let* ((root (locate-dominating-file default-directory "package.json"))
          (pkg-manager (cond
                        ((file-exists-p (expand-file-name "pnpm-lock.yaml" root)) "pnpm")
                        ((file-exists-p (expand-file-name "yarn.lock" root)) "yarn")
                        (t "npm")))
+         (pkg-file (expand-file-name "package.json" root))
+         (scripts (and (file-exists-p pkg-file)
+                       (condition-case err
+                           (let* ((json-object-type 'alist)
+                                  (json-array-type 'list)
+                                  (pkg (json-read-file pkg-file)))
+                             (mapcar #'car (alist-get 'scripts pkg)))
+                         (error
+                          (message "解析 package.json 失败: %s" (error-message-string err))
+                          nil))))
          (script (completing-read
                   (format "[%s] Run script: " pkg-manager)
-                  (my/get-npm-scripts root))))
+                  (or scripts '("no-scripts")))))
     (compile (format "cd %s && %s run %s" root pkg-manager script))))
-
-(defun my/get-npm-scripts (root)
-  "获取 package.json 中的脚本列表。
-如果文件不存在或解析失败，返回 nil。"
-  (when root
-    (let ((pkg-file (expand-file-name "package.json" root)))
-      (condition-case err
-          (when (file-exists-p pkg-file)
-            (let* ((json-object-type 'alist)
-                   (json-array-type 'list)
-                   (pkg (json-read-file pkg-file))
-                   (scripts (alist-get 'scripts pkg)))
-              (mapcar #'car scripts)))
-        (error
-         (message "解析 package.json 失败: %s" (error-message-string err))
-         nil)))))
 
 (global-set-key (kbd "C-c r n") 'my/npm-run)
 
@@ -197,19 +184,6 @@
 ;; ============================================
 ;; 9. 安装提示
 ;; ============================================
-
-(defun my/check-web-dev-tools ()
-  "检查 Web 开发所需的工具是否已安装。"
-  (interactive)
-  (let ((tools '(("vtsls" . "npm install -g @vtsls/language-server (推荐)")
-                 ("typescript-language-server" . "npm install -g typescript typescript-language-server (备选)")
-                 ("tailwindcss-language-server" . "npm install -g @tailwindcss/language-server")
-                 ("prettier" . "npm install -g prettier")
-                 ("eslint" . "npm install -g eslint"))))
-    (dolist (tool tools)
-      (if (executable-find (car tool))
-          (message "✓ %s 已安装" (car tool))
-        (message "✗ %s 未安装 - 运行: %s" (car tool) (cdr tool))))))
 
 (provide 'config-web)
 ;;; config-web.el ends here

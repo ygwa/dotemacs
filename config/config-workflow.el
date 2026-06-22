@@ -42,13 +42,6 @@
   (other-window 1)
   (agent-shell-toggle))
 
-(defun my/workflow-focus-code ()
-  "专注代码模式：隐藏所有面板"
-  (interactive)
-  (when (fboundp 'shackle-close-all-windows)
-    (shackle-close-all-windows))
-  (delete-other-windows))
-
 ;; ============================================
 ;; 3. Transcript查看函数
 ;; ============================================
@@ -79,7 +72,12 @@
 
 ;; 工作流布局
 (global-set-key (kbd "C-c f l") #'my/workflow-layout)
-(global-set-key (kbd "C-c f c") #'my/workflow-focus-code)
+(global-set-key (kbd "C-c f c")
+                (lambda ()
+                  (interactive)
+                  (when (fboundp 'shackle-close-all-windows)
+                    (shackle-close-all-windows))
+                  (delete-other-windows)))
 
 ;; Transcript查看
 (global-set-key (kbd "C-c C-t") #'my/agent-shell-view-transcript)
