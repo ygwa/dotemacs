@@ -209,11 +209,18 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
                    (length package-activated-list)
                    (emacs-init-time))
            'face 'font-lock-comment-face)))
-  ;; 替代 dashboard-setup-startup-hook, 避免 init-info 重复显示
+  ;; 替代 dashboard-setup-startup-hook, daemon 模式下 emacs-startup-hook
+  ;; 在第一个 frame 创建前已跑完, 装的内容会丢; 改挂到 server-after-make-frame-hook
+  ;; 才能在每个 emacsclient -t 连接时重新渲染 dashboard 内容.
   (when (< (length command-line-args) 2)
     (add-hook 'window-size-change-functions #'dashboard-resize-on-hook 100)
-    (add-hook 'after-init-hook #'dashboard-insert-startupify-lists)
-    (add-hook 'emacs-startup-hook #'dashboard-initialize)))
+    (add-hook 'server-after-make-frame-hook
+              (lambda ()
+                (when (buffer-live-p (get-buffer dashboard-buffer-name))
+                  (with-selected-frame (selected-frame)
+                    (dashboard-insert-startupify-lists)
+                    (switch-to-buffer dashboard-buffer-name)))))
+    (add-hook 'after-init-hook #'dashboard-insert-startupify-lists)))
 
 ;; ============================================
 ;; 8. 其它细节
