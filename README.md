@@ -1,6 +1,10 @@
 # Emacs 配置
 
-为 Emacs 30.2 优化的个人配置。**GUI / TUI 同源**，所有视觉配置已用 `(display-graphic-p)` 守护，所有外部二进制依赖已用 `executable-find` 守护。
+为 Emacs 30.2 优化的个人配置。**TUI 优先（emacsclient + daemon）**，所有外部二进制依赖已用 `executable-find` 守护。
+
+> **架构原则（2026-06）**：本配置统一为 TUI-only，不再包含 GUI 分支。
+> 早期 `config-gui.el`（字体 / Mac 暗色 / 像素滚动 / 全屏快捷键）已整体下线。
+> 所有视觉配置按 24-bit color TUI 终端优化（catppuccin mocha 主题、字符级 modeline / dashboard / nerd-icons fallback）。
 
 ## 🎯 启动后第一眼
 
@@ -40,13 +44,14 @@ Agenda for the coming week: (a)
 ├── init.el                # 主入口
 ├── custom.el              # custom-set-variables 自动生成
 ├── config/
-│   ├── config-default.el  # 基础设置（编码/dired/cursor/视觉微调）
-│   ├── config-org.el      # Org 模式 + Hugo 博客 + Babel
-│   ├── config-shared.el   # 跨平台 UI（modeline/dashboard/window/nerd-icons）
-│   ├── config-gui.el      # GUI 专属（字体/Mac 暗色/dialog）
+│   ├── config-default.el  # 基础设置（编码/dired/cursor）
+│   ├── config-org.el      # Org 模式 + Inbox capture
+│   ├── config-shared.el   # TUI UI（catppuccin/doom-modeline/dashboard/window）
 │   ├── config-package.el  # 包管理 + 编程工具（vertico/corfu/consult/eglot）
 │   ├── config-markdown.el # Markdown 编辑与预览
-│   └── config-web.el      # Web 前端（tree-sitter/apheleia/eglot）
+│   ├── config-web.el      # Web 前端（tree-sitter/apheleia/eglot）
+│   ├── config-agent.el    # agent-shell + OpenCode
+│   └── config-workflow.el # 工作流布局（treemacs + AI panel）
 ├── tree-sitter/           # tree-sitter 语法库（运行 M-x treesit-install-language-grammar 安装）
 ├── var/                   # 运行时数据
 └── docs/                  # 详细使用指南
@@ -71,11 +76,10 @@ git clone <repo> ~/.emacs.d
 `init.el` → `early-init.el` 先跑（GC/frame/native-comp）→ 主入口 `require` 顺序：
 
 ```
-config-default  →  config-org  →  config-shared  →  config-gui
+config-default  →  config-org  →  config-shared
                 →  config-web  →  config-package →  config-markdown
+                →  config-agent →  config-workflow
 ```
-
-`config-shared` 必须在 `config-gui` 之前（gui 依赖 `my/theme`）。
 
 ## ⌨️ 快捷键
 
@@ -155,7 +159,6 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 | 键 | 命令 |
 |---|---|
 | `C-c y` | `youdao-dictionary-search-at-point+` |
-| `<s-return>` | `toggle-fullscreen`（**仅 GUI**）|
 
 ## 📦 主要依赖
 
@@ -205,11 +208,12 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 - [Rust 开发指南](./docs/rust-development.md) — eglot + rust-analyzer
 - [Magit Git 管理指南](./docs/magit-guide.md)
 
-## 🔧 跨平台行为
+## 🔧 TUI 行为
 
-- **GUI 专属**（在 `config-gui.el`）：字体配置、Mac 暗色模式、像素滚动、`<s-return>` 全屏
-- **跨平台**（在 `config-shared.el`）：modeline、dashboard、nerd-icons（TUI 下自动隐藏）、ace-window、shackle
-- **TUI 守护**：所有 `nerd-icons` / `dashboard` 图标、`pixel-scroll` 已在 `display-graphic-p` 下静默关闭
+- **启动方式**：emacsclient + daemon（`emacs --daemon` 启动后台服务，`emacsclient -t` 连 TUI frame）
+- **24-bit color 终端**：catppuccin mocha 主题直接渲染
+- **TUI 字符级 fallback**：nerd-icons-dired / nerd-icons-corfu / dashboard 全部走 unicode 字符（不依赖 Nerd Font）
+- **daemon 适配**：`my/load-theme` 走 `server-after-make-frame-hook`，cursor-type / 字体设置跳过 daemon 启动
 - **外部依赖**：`pandoc` / `mermaid` / `plantuml` / `dot` / `gnuplot` 用 `executable-find` 守护，未安装不报错
 
 ## 📝 许可
