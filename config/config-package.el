@@ -166,6 +166,7 @@
 
 (use-package vundo
   :ensure t
+  :defer t                       ; 首屏不撤销, 延迟到首次 C-x u 触发
   :bind (("C-z" . undo)
          ("C-x u" . vundo))
   :config
@@ -176,7 +177,8 @@
 ;; ============================================
 
 (use-package plantuml-mode
-  :ensure t)
+  :ensure t
+  :defer t)                       ; 打开 .iuml/.plantuml 文件时自动加载, 首屏不需
 
 (use-package smartparens
   :ensure t
@@ -187,12 +189,13 @@
 
 (use-package youdao-dictionary
   :ensure t
+  :defer t                       ; 首屏不查词典, 延迟到首次 C-c y
   :init
   (setq url-automatic-caching t)
   :config
   (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point+))
 
-  ;; 建立模式映射，当打开 .yaml/.json 时自动使用 Tree-sitter 模式
+;; 建立模式映射，当打开 .yaml/.json 时自动使用 Tree-sitter 模式
 (setq major-mode-remap-alist
       '((yaml-mode . yaml-ts-mode)
         (js-mode . js-ts-mode)
@@ -291,6 +294,18 @@
         (delete-dups
          (append '(font-lock-constant-face TeX-fold-unfolded-face) pl)))
       (alist-get 'tex-mode jinx-exclude-faces)))
+
+;; ============================================
+;; 10b. ws-butler — 保存时清被改行的行尾空格
+;; ============================================
+;; 只清理当前 buffer 中**实际被修改过**的行, 不动未碰的行, 避免
+;; 全盘格式化污染 git diff. 文本模式也启用, 让 prose 也保持干净.
+;; 卸载更老的 whitespace-cleanup (本配置未装).
+
+(use-package ws-butler
+  :ensure t
+  :defer t
+  :hook ((prog-mode text-mode) . ws-butler-mode))
 
 ;; ============================================
 ;; 11. Dape 调试器 (DAP 协议, eglot 哲学)
