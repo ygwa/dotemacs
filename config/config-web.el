@@ -41,7 +41,8 @@
         (css "https://github.com/tree-sitter/tree-sitter-css")
         (json "https://github.com/tree-sitter/tree-sitter-json")
         (html "https://github.com/tree-sitter/tree-sitter-html")
-        (yaml "https://github.com/tree-sitter/tree-sitter-yaml")))
+        (yaml "https://github.com/tree-sitter/tree-sitter-yaml")
+        (markdown "https://github.com/tree-sitter/tree-sitter-markdown" "master" "src")))
 
 (defun my/install-all-treesit-grammars ()
   "逐个安装所有 tree-sitter 语法库 (按顺序而非并行, 避免编译风暴)。
@@ -209,13 +210,6 @@
       (if (executable-find (car tool))
           (message "✓ %s 已安装" (car tool))
         (message "✗ %s 未安装 - 运行: %s" (car tool) (cdr tool))))))
-
-;; 首次加载时提示检查工具
-(run-with-idle-timer 5 nil
-                     (lambda ()
-                       (unless (or (executable-find "vtsls")
-                                   (executable-find "typescript-language-server"))
-                         (message "提示: TypeScript LSP 未安装。推荐安装 vtsls: npm install -g @vtsls/language-server"))))
 
 (provide 'config-web)
 ;;; config-web.el ends here

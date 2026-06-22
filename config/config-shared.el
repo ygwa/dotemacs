@@ -33,20 +33,32 @@
 (add-hook 'Info-mode-hook #'visual-line-mode)
 
 ;; ============================================
-;; 3. 主题 (doom-themes, GUI/TUI 通用)
+;; 3. 主题 (catppuccin, GUI/TUI 通用)
 ;; ============================================
+;; catppuccin 包只暴露单一主题名 `catppuccin', flavor 通过
+;; `catppuccin-flavor' 切换 (mocha / macchiato / frappe / latte).
+;; 重新加载用 `catppuccin-reload'.
 ;; Mac 暗色模式 hook 在 config-gui.el 中挂
 
-(defvar my/theme 'doom-one
-  "当前主题。GUI/TUI 通用。")
+(use-package catppuccin-theme
+  :ensure t
+  :custom
+  (catppuccin-flavor 'mocha))
+
+(defvar my/theme-flavor 'mocha
+  "当前 catppuccin flavor。GUI/TUI 通用。
+切换后需 `catppuccin-reload' 重新生成主题。")
 
 (defun my/load-theme (&optional _frame)
-  "加载并启用 `my/theme'。daemon 下 frame hook 安全。
-`_frame' 参数让此函数可挂在 `server-after-make-frame-hook'。"
-  (when (and (require 'doom-themes nil 'noerror)
-             (locate-library "doom-themes"))
+  "加载并启用 `catppuccin' 主题, 应用 `my/theme-flavor'。
+daemon 下 frame hook 安全; `_frame' 参数让此函数可挂在
+`server-after-make-frame-hook'。"
+  (when (and (require 'catppuccin-theme nil 'noerror)
+             (locate-library "catppuccin-theme"))
+    (setq catppuccin-flavor my/theme-flavor)
+    (catppuccin-reload)              ; 触发 face 重新生成, 应用新 flavor
     (mapc #'disable-theme custom-enabled-themes)
-    (load-theme my/theme t)))
+    (load-theme 'catppuccin t)))
 
 (if (daemonp)
     (add-hook 'server-after-make-frame-hook #'my/load-theme)
@@ -90,6 +102,7 @@
 ;; Ace-window: 快速跳转分屏
 (use-package ace-window
   :ensure t
+  :defer t                       ; 显式延迟加载, 首次 M-o 时才加载包
   :bind ("M-o" . ace-window)
   :custom
   (aw-scope 'frame)
@@ -168,10 +181,14 @@
   (dashboard-icon-type (and (display-graphic-p) 'nerd-icons))
   (dashboard-set-heading-icons (display-graphic-p))
   (dashboard-set-file-icons (display-graphic-p))
+  ;; dashboard-items 是 alist: '(item-type . count), 顺序即渲染顺序.
+  ;; dashboard 包默认 bookmarks, 这里换成 recents/projects/agenda (个人偏好).
   (dashboard-items '((recents  . 5)
                      (projects . 5)
                      (agenda   . 5)))
   (dashboard-projects-backend 'project-el)
+  ;; dashboard 布局分 4 块: banner / navigator / items / footer
+  ;; 这里只开 navigator (快捷按钮), 关 footer (版权/统计 — 个人用不需要)
   (dashboard-set-navigator t)
   (dashboard-set-footer nil)
   (dashboard-week-agenda-trim-leading-zero t)

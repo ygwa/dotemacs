@@ -4,6 +4,9 @@
 ;; 0. 核心路径定义
 ;; ============================================
 ;; dashboard / capture 都引用这些, 不要轻易改名
+;;
+;; ~/Documents 是 macOS 默认个人目录, 开启 iCloud 同步后 org 文件
+;; 会自动跨设备; 非 macOS 用户可改为 ~/org 或 ~/.emacs.d/org.
 
 (defvar my/org-root-dir (expand-file-name "~/Documents/org/"))
 

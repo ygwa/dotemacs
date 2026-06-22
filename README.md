@@ -47,7 +47,6 @@ Agenda for the coming week: (a)
 │   ├── config-package.el  # 包管理 + 编程工具（vertico/corfu/consult/eglot）
 │   ├── config-markdown.el # Markdown 编辑与预览
 │   └── config-web.el      # Web 前端（tree-sitter/apheleia/eglot）
-├── lisp/                  # 自定义函数（按需）
 ├── tree-sitter/           # tree-sitter 语法库（运行 M-x treesit-install-language-grammar 安装）
 ├── var/                   # 运行时数据
 └── docs/                  # 详细使用指南
@@ -64,6 +63,8 @@ git clone <repo> ~/.emacs.d
 ```
 
 启动后第一次会从 USTC 镜像下载 ~50 个包，耗时约 30s-2min。
+
+> Web/TS 项目的 tree-sitter 语法库 (typescript/tsx/javascript/css/json/html/yaml) 需手动安装：打开任一 .ts 文件后跑 `M-x treesit-install-language-grammar` 按提示逐个装，或 `M-x my/install-all-treesit-grammars` 一键全装。Rust 语法库已预编译在 `tree-sitter/libtree-sitter-rust.dylib`，开箱即用。
 
 ## ⚙️ 加载顺序
 
@@ -129,10 +130,9 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 
 | 键 | 命令 |
 |---|---|
-| `C-c c` | `org-capture`（`t` 待办 / `i` Inbox / `q` 问题 / `b` 博客）|
+| `C-c c` | `org-capture`（`t` 待办 / `i` Inbox / `b` 博客）|
 | `C-c a` | `org-agenda` |
 | `C-c l` | `org-store-link` |
-| `C-c r o/i` | `citar-open / insert-citation`（org-mode 内）|
 
 ### LSP（eglot，编程 buffer 内）⭐
 
@@ -167,7 +167,7 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 
 ### 编辑
 - **magit** — Git
-- **doom-themes** / **doom-modeline** — 主题与 mode-line
+- **catppuccin-theme** / **doom-modeline** — 主题与 mode-line
 - **nerd-icons** / **nerd-icons-dired** / **nerd-icons-corfu** — 图标（TUI 自动关闭）
 - **dashboard** — 启动仪表盘
 - **which-key** / **editorconfig** — 内置增强
@@ -182,10 +182,8 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 - **project**（Emacs 30 内置）— 项目管理
 
 ### Org
-- **org** / **org-modern** / **org-appear** — Org 模式美化
-- **ox-hugo** — Hugo 博客导出
-- **org-download** / **ob-mermaid** / **plantuml-mode** — 附件与 Babel
-- **valign** / **citar** — 表格对齐与文献引用
+- **org**（Emacs 30 内置）— Org 模式基础
+- **plantuml-mode** — Babel plantuml 代码块
 
 ### 编辑器
 - **markdown-mode** — Markdown
@@ -206,9 +204,6 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 - [使用场景索引](./docs/usage-scenarios.md)
 - [Rust 开发指南](./docs/rust-development.md) — eglot + rust-analyzer
 - [Magit Git 管理指南](./docs/magit-guide.md)
-- [笔记管理系统使用指南](./docs/note-taking-guide.md)
-- [Org Mode 简化配置指南](./docs/workflow-guide.md)
-- [配置改进总结](./docs/improvements.md)
 
 ## 🔧 跨平台行为
 

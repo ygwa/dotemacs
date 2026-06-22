@@ -37,24 +37,19 @@
           (side . right) (slot . 0) (window-width . 0.4)))
 
   ;; ============================================
-  ;; 工作目录: 跟随 projectile 项目根
-  ;; agent-shell-project.el 默认就是 projectile, 这里显式确认
+  ;; 工作目录: 跟随 git/svn/hg 项目根 (内置 vc-root-dir, 不依赖 projectile)
   ;; ============================================
   (setq agent-shell-cwd-function
         (lambda ()
-          "跟随 projectile 项目根, 找不到就用 buffer 的 default-directory."
-          (or (and (fboundp 'projectile-project-root)
-                   (projectile-project-root))
-              default-directory)))
+          "跟随 VCS 项目根 (git/svn/hg 等), 找不到就用 buffer 的 default-directory."
+          (or (vc-root-dir) default-directory)))
 
   ;; ============================================
   ;; Transcript 配置: 自动保存对话记录到项目目录
   ;; ============================================
   (setq agent-shell-transcript-file-path-function
         (lambda ()
-          (let* ((root (or (and (fboundp 'projectile-project-root)
-                                (projectile-project-root))
-                           default-directory))
+          (let* ((root (or (vc-root-dir) default-directory))
                  (dir (expand-file-name ".agent-shell/transcripts" root)))
             (unless (file-directory-p dir) (make-directory dir t))
             (expand-file-name
