@@ -70,6 +70,12 @@
                   config-package
                   config-markdown
                   config-agent
+                  config-ai-core
+                  config-ai-memory
+                  config-ai-review
+                  config-ai-pr-review
+                  config-ai-workbench
+                  config-git-review
                   config-workflow))
 
 ;; ============================================
