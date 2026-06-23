@@ -5,9 +5,12 @@
 
 ## 📚 可用指南
 
+- [配置总览](./configuration-overview.md) — 目标、特性、插件与快捷键体系
 - [全局快捷键速查表](./keybindings.md) — 所有键位单一真值源
 - [Rust 开发指南](./rust-development.md) — Eglot + rust-analyzer
 - [Magit Git 管理指南](./magit-guide.md) — magit 单字母键与场景
+- [Forge GitHub/GitLab 指南](./forge-guide.md) — PR/MR 审阅与 token 配置
+- [AI Workbench 指南](./ai-workbench.md) — Agent OS 层（memory / review / gh+glab）
 
 ## 🧭 常用工作流
 
@@ -36,7 +39,7 @@ emacsclient -c
 |---|---|
 | `C-c p f` | 搜项目内文件（fuzzy） |
 | `C-c p g` | 项目内搜 regex |
-| `C-c p s` | 开项目 shell（vterm，按项目作用域） |
+| `C-c p s` | 开项目 Eat 终端（项目根目录） |
 | `C-c p b` | 切到项目内的 buffer |
 | `C-c p d` | 打开项目根 dired |
 
@@ -45,6 +48,48 @@ emacsclient -c
 ### AI 编程工作流（一键布局）
 
 按 `C-c f l` → 左侧 treemacs 文件树 + 右侧 agent-shell 面板（OpenCode 接管）。退出时 `C-c f c` 清窗。
+
+### 代码 / Git / Markdown 审阅 → AI
+
+| 场景 | 操作 |
+|---|---|
+| Magit 未提交 diff | `C-x g` → `C-c C-d` 插入 diff 到 agent 输入区 |
+| Magit log 某 commit | 光标在 commit 上 → `C-c C-d` |
+| Markdown 文档 | `C-c C-d` 送全文；选中段落则送 region |
+| embark | `C-.` → “Send git diff / Markdown to agent shell” |
+| 行内改动 | prog-mode 自动 `diff-hl-mode` 标记未提交行 |
+| Markdown lint | 安装 `markdownlint` 后 flymake 自动提示 |
+| GitHub/GitLab PR | Magit 内 `'` → Forge；打开 MR diff 后 `C-c C-d` |
+
+无 preset prompt：内容仅插入 agent 输入区，自行补充指令后回车发送。
+
+### 多项目切换（Phase 4）
+
+| 键 | 动作 |
+|---|---|
+| `C-c p p` | 切项目；有保存布局则恢复，否则 `C-c f l` 工作台 |
+| `C-c p w` | 保存当前项目窗口布局 |
+| `C-c p W` | 恢复当前项目布局 |
+| tab-bar | 启动后自动启用，按 VCS 根目录分组 tab |
+
+布局持久化在 `var/project-layouts.el`（gitignore）。
+
+### AI Workbench（Agent OS 层）
+
+前缀 **`C-c C-w`**。项目数据在 **`project/.agent/`**（memory、profiles、reviews）。
+
+| 场景 | 操作 |
+|---|---|
+| 新 AI 任务 | `C-c C-w n` → Org capture + 布局 + agent |
+| Org 任务 → 规划 | 光标在 Org 标题 → `C-c C-w p` → `*AI-Plan*` |
+| 本地代码审阅 | `C-c C-w r` → `*AI-Review*` → `C-c C-w a` 送 agent |
+| GitHub PR | `C-c C-w h`（需 `gh auth login`） |
+| GitLab MR | `C-c C-w L`（需 `glab auth login`） |
+| 保存 review | `C-c C-w S` → `.agent/reviews/` |
+| 项目记忆 | `C-c C-w M` 捕获 / `m` 送 agent / `o` 打开 memory.org |
+| Agent 角色 | 编辑 `.agent/profiles/*.md` → `C-c C-w P` |
+
+详见 [AI Workbench 指南](./ai-workbench.md)。
 
 ### LSP 触发条件
 

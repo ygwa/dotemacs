@@ -43,8 +43,65 @@
 | `C-c p b` | `project-switch-to-buffer` | 切换项目 buffer |
 | `C-c p d` | `project-dired` | 打开项目根 dired |
 | `C-c p v` | `project-vc-dir` | 打开项目 VCS 目录 |
-| `C-c p s` | `project-shell` | 打开项目 shell |
+| `C-c p s` | `eat-project` | 打开项目 Eat 终端 |
 | `C-c p g` | `project-find-regexp` | 项目内搜 regex |
+| `C-c p p` | `my/project-switch-project` | 切项目；有保存布局则恢复，否则 AI 工作台布局 |
+| `C-c p w` | `my/project-save-layout` | 保存当前项目窗口布局 |
+| `C-c p W` | `my/project-restore-layout` | 恢复当前项目已保存布局 |
+
+## 🤖 AI Agent Shell（agent-shell + OpenCode）
+
+> 工作流关键键位，与 `config-agent.el` 同步。
+
+| 键位 | 命令 | 说明 |
+|---|---|---|
+| `C-c C-a` | `agent-shell-toggle` | 显示/隐藏当前 agent buffer |
+| `C-c C-s` | `agent-shell-new-shell` | 新建会话（不同项目/任务） |
+| `C-c C-o` | `agent-shell-opencode-start-agent` | 直接起 OpenCode（跳过选 provider） |
+| `C-c C-t` | `my/agent-shell-view-transcript` | 在 markdown 中查看当前对话记录 |
+| `C-c C-d` | `my/magit-send-diff-to-agent` / `my/markdown-send-to-agent` | Magit / Markdown 内：插入 diff 或文档到 agent 输入区（无 preset prompt） |
+| `C-.` | embark-act | 可选动作含 “Send git diff / Markdown to agent shell” |
+
+## 🧩 AI Workbench（`C-c C-w` 前缀）
+
+> 与 `config-ai-workbench.el` 同步。详见 [AI Workbench 指南](./ai-workbench.md)。
+
+| 键位 | 命令 | 说明 |
+|---|---|---|
+| `C-c C-w n` | `my/ai-new-task` | AI Org 任务 + 布局 + agent |
+| `C-c C-w p` | `my/ai-plan-from-org` | Org 标题 → `*AI-Plan*` |
+| `C-c C-w a` | `my/ai-send-active-to-agent` | 送 Plan/Review 到 agent |
+| `C-c C-w r` | `my/ai-review-local` | 本地 diff → `*AI-Review*` |
+| `C-c C-w R` | `my/ai-review-send-to-agent` | 送 review 到 agent |
+| `C-c C-w S` | `my/ai-review-save` | 保存到 `.agent/reviews/` |
+| `C-c C-w g` | `my/ai-pr-review` | PR/MR 自动检测（gh/glab） |
+| `C-c C-w h` | `my/ai-pr-review-github` | GitHub PR（`gh`） |
+| `C-c C-w L` | `my/ai-pr-review-gitlab` | GitLab MR（`glab`） |
+| `C-c C-w G` | `my/ai-pr-review-send-to-agent` | 拉 PR/MR 并送 agent |
+| `C-c C-w P` | `my/ai-start-with-profile` | 加载 agent profile |
+| `C-c C-w M` | `my/ai-memory-capture` | 追加 memory 笔记 |
+| `C-c C-w m` | `my/ai-memory-send-to-agent` | 送 memory 到 agent |
+| `C-c C-w o` / `d` | memory / decisions.org | 打开项目记忆文件 |
+| `C-c C-w t` | `my/ai-tool-run` | 工具注册表 |
+| `C-c C-w l` | `my/ai-log-show` | 显示 `*AI-Log*` |
+
+## 🔍 Git 审阅（diff-hl / delta / forge）
+
+| 键位 | 命令 | 说明 |
+|---|---|---|
+| （prog-mode 自动） | `diff-hl-mode` | 行内未提交改动标记 |
+| `C-x g` | `magit-status` | Magit 状态窗 |
+| `C-c C-d` | `my/magit-send-diff-to-agent` | Magit buffer 内送 diff 到 agent |
+| `'` | `forge-dispatch` | Magit 内 Forge 菜单（GitHub / GitLab PR/MR） |
+| 详见 [Forge 指南](./forge-guide.md) | | token 配置与自托管 GitLab |
+
+## 📝 Markdown 审阅
+
+| 键位 | 命令 | 说明 |
+|---|---|---|
+| `C-c C-d` | `my/markdown-send-to-agent` | 送 region 或全文到 agent |
+| （markdown-mode 自动） | `flymake-mode` + markdownlint | 需 `markdownlint` 二进制 |
+| `M-x markdown-view-mode` | TUI 渲染视图 | 只读预览 |
 
 ## 🧠 LSP（eglot，编程 buffer 内）
 
@@ -86,17 +143,6 @@
 | `C-x t t` | `treemacs` | 切换 treemacs |
 | `C-x t d` | `treemacs-delete-other-windows` | 删其它窗 |
 
-## 🤖 AI Agent Shell（agent-shell + OpenCode）
-
-> 工作流关键键位，与 `config-agent.el` 同步。
-
-| 键位 | 命令 | 说明 |
-|---|---|---|
-| `C-c C-a` | `agent-shell-toggle` | 显示/隐藏当前 agent buffer |
-| `C-c C-s` | `agent-shell-new-shell` | 新建会话（不同项目/任务） |
-| `C-c C-o` | `agent-shell-opencode-start-agent` | 直接起 OpenCode（跳过选 provider） |
-| `C-c C-t` | `my/agent-shell-view-transcript` | 在 markdown 中查看当前对话记录 |
-
 ## 🛠️ 工作流布局
 
 | 键位 | 命令 | 说明 |
@@ -119,7 +165,7 @@
 
 | 键位 | 命令 | 说明 |
 |---|---|---|
-| `C-` ` | `vterm-toggle` | 切 vterm 终端（按项目作用域） |
+| `C-` ` | `my/eat-toggle` | 切 Eat 终端（按项目作用域） |
 
 ## 🐛 调试（Dape，Emacs 30 内置 DAP）
 
@@ -182,8 +228,9 @@
 |---|---|---|
 | `C-.` | embark-act | embark |
 | `C-;` | embark-dwim | embark |
-| `` C-` `` | vterm-toggle | vterm |
+| `` C-` `` | my/eat-toggle | eat |
 | `C-c C-a` | agent-shell-toggle | agent-shell |
+| `C-c C-d` | my/magit-send-diff-to-agent / my/markdown-send-to-agent | agent |
 | `C-c C-o` | agent-shell-opencode-start-agent | agent-shell |
 | `C-c C-r` | consult-recent-file | consult |
 | `C-c C-s` | agent-shell-new-shell | agent-shell |
@@ -205,8 +252,11 @@
 | `C-c p d` | project-dired | project |
 | `C-c p f` | project-find-file | project |
 | `C-c p g` | project-find-regexp | project |
-| `C-c p s` | project-shell | project |
+| `C-c p p` | my/project-switch-project | workflow |
+| `C-c p s` | eat-project | eat |
 | `C-c p v` | project-vc-dir | project |
+| `C-c p w` | my/project-save-layout | workflow |
+| `C-c p W` | my/project-restore-layout | workflow |
 | `C-c r n` | my/npm-run | web |
 | `C-c s a` | eglot-code-actions | eglot |
 | `C-c s d` | eglot-find-declaration | eglot |
@@ -248,5 +298,6 @@
 | 模块 | 主文档 |
 |---|---|
 | Magit | [magit-guide.md](./magit-guide.md) |
+| Forge (GitHub/GitLab) | [forge-guide.md](./forge-guide.md) |
 | Rust 开发 | [rust-development.md](./rust-development.md) |
 | 使用场景 | [usage-scenarios.md](./usage-scenarios.md) |

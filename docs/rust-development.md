@@ -163,7 +163,7 @@ cargo test
 |---|---|
 | `C-c p f` | `project-find-file` |
 | `C-c p b` | `project-switch-to-buffer` |
-| `C-c p s` | `project-shell` |
+| `C-c p s` | `eat-project` |
 | `C-c p g` | `project-find-regexp` |
 
 ## 常见问题

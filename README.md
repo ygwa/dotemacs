@@ -13,7 +13,7 @@
 ```text
 EMACS
 
-Thinking & Coding - 你的第二大脑
+AI 工作台
 
 ✦  79 packages  ·  loaded in 0.005731 seconds   ← `emacs --batch` 加载时间, daemon 实测约 0.8-1.5s
 
@@ -43,8 +43,10 @@ Agenda for the coming week: (a)
 │   ├── config-package.el  # 包管理 + 编程工具（vertico/corfu/consult/eglot）
 │   ├── config-markdown.el # Markdown 编辑与预览
 │   ├── config-web.el      # Web 前端（tree-sitter/apheleia/eglot）
-│   ├── config-agent.el    # agent-shell + OpenCode
-│   └── config-workflow.el # 工作流布局（treemacs + AI panel）
+│   ├── config-agent.el    # agent-shell + OpenCode + 审阅桥
+│   ├── config-ai-*.el     # Agent OS 层 (memory/review/pr/workbench)
+│   ├── config-git-review.el # diff-hl / magit-delta / forge
+│   └── config-workflow.el # 工作流布局（treemacs + AI panel + 多项目）
 ├── tree-sitter/           # tree-sitter 语法库（运行 M-x treesit-install-language-grammar 安装）
 ├── var/                   # 运行时数据
 └── docs/                  # 详细使用指南
@@ -69,7 +71,7 @@ git clone <repo> ~/.emacs.d
 ```
 config-default  →  config-org  →  config-shared  →  config-treesit
                 →  config-web  →  config-package →  config-markdown
-                →  config-agent →  config-workflow
+                →  config-agent →  config-ai-* →  config-git-review →  config-workflow
 ```
 
 ## ⌨️ 快捷键
@@ -107,15 +109,42 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 | `C-c p b` | `project-switch-to-buffer` |
 | `C-c p d` | `project-dired` |
 | `C-c p v` | `project-vc-dir` |
-| `C-c p s` | `project-shell` |
+| `C-c p s` | `eat-project` |
 | `C-c p g` | `project-find-regexp` |
+| `C-c p p` | `my/project-switch-project` | 切项目并恢复布局 / 或一键 AI 布局 |
+| `C-c p w` | `my/project-save-layout` | 保存当前项目窗口布局 |
+| `C-c p W` | `my/project-restore-layout` | 恢复已保存的项目布局 |
+
+### AI 审阅 ⭐
+
+| 键 | 命令 | 说明 |
+|---|---|---|
+| `C-c C-a` | `agent-shell-toggle` | 显示/隐藏 agent 面板 |
+| `C-c C-o` | `agent-shell-opencode-start-agent` | 启动 OpenCode |
+| `C-c C-d` | 送 diff/文档到 agent | Magit / Markdown buffer 内；仅插入内容，无 preset prompt |
+| `C-c f l` | `my/workflow-layout` | 左 treemacs + 右 agent |
+
+Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CLI 审阅：`C-c C-w g/h/L`（gh/glab）。详见 [AI Workbench](./docs/ai-workbench.md) 与 [Forge 指南](./docs/forge-guide.md)。
+
+### AI Workbench（`C-c C-w`）⭐
+
+| 键 | 说明 |
+|---|---|
+| `C-c C-w n` | 新建 AI Org 任务 + 工作台布局 |
+| `C-c C-w r` | 本地 diff → `*AI-Review*` |
+| `C-c C-w g` / `h` / `L` | PR/MR 审阅（auto / GitHub `gh` / GitLab `glab`） |
+| `C-c C-w a` | 送 Plan/Review 到 agent |
+| `C-c C-w P` | 加载 agent profile |
+| `C-c C-w m` | 送项目 memory 到 agent |
+
+完整键位见 [AI Workbench 指南](./docs/ai-workbench.md)。
 
 ### 窗口
 
 | 键 | 命令 |
 |---|---|
 | `M-o` | `ace-window`（`x` 删/`m` 换/`n`/`v` 分屏/`b` 选 buffer/`u` 撤销）|
-| `C-`` | `vterm-toggle`（按项目作用域）|
+| `C-`` | `my/eat-toggle`（按项目作用域）|
 
 ### 撤销
 
@@ -170,6 +199,13 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 | `python` | Dape Python 调试（debugpy）| 静默跳过，Python 调试不工作 | 系统自带；`pip install debugpy` 装 DAP adapter |
 | `node` | Dape Node.js 调试（vscode-js-debug）| 静默跳过，Node 调试不工作 | `brew install node` / `apt install nodejs`；`npm i -g vscode-js-debug` |
 | `lldb-dap` | Dape Rust 调试 | 静默跳过，Rust 调试不工作 | `brew install lldb-dap`（LLVM 自带）|
+| `delta` | Magit diff 语法高亮（magit-delta）| 静默回退普通 Magit diff | `brew install git-delta` |
+| `markdownlint` | Markdown flymake lint | 静默跳过，无 lint 提示 | `brew install markdownlint-cli` |
+| `opencode` | agent-shell OpenCode provider | agent 无法启动 | 见 OpenCode 安装文档 |
+| `gh` | GitHub PR review（`C-c C-w h`）| 无法用 gh 拉 PR | `brew install gh` |
+| `glab` | GitLab MR review（`C-c C-w L`）| 无法用 glab 拉 MR | `brew install glab` |
+
+**Forge（GitHub / GitLab）** 需 `~/.authinfo` 配置 token，见 [Forge 指南](./docs/forge-guide.md)。无 token 时 Magit 仍可用，Forge 功能不可用。
 
 **可选工具**（README 之前提过但配置里不依赖）：
 - `ripgrep` — `C-c k` 走 `consult-ripgrep` 速度比 git grep 快 10x
@@ -195,8 +231,12 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 - **smartparens** / **rainbow-delimiters** / **rainbow-mode** — 括号/颜色
 - **vundo** — 撤销可视化
 
+### Git / 审阅
+- **magit** / **forge** / **diff-hl** / **magit-delta** — Git、PR/MR 审阅、行内 diff
+- **flymake-markdownlint** — Markdown 结构 lint
+
 ### 终端与 Shell
-- **vterm** / **vterm-toggle** — 集成终端
+- **eat** — 集成终端（NonGNU ELPA，纯 Elisp）
 
 ### 项目
 - **project**（Emacs 30 内置）— 项目管理
@@ -221,10 +261,13 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 
 `docs/` 目录下：
 
+- [配置总览](./docs/configuration-overview.md) — 目标、特性、插件与快捷键体系
 - [全局快捷键速查表](./docs/keybindings.md) — 所有键位单一真值源
 - [使用场景索引](./docs/usage-scenarios.md)
 - [Rust 开发指南](./docs/rust-development.md) — eglot + rust-analyzer
 - [Magit Git 管理指南](./docs/magit-guide.md)
+- [Forge GitHub/GitLab 指南](./docs/forge-guide.md)
+- [AI Workbench 指南](./docs/ai-workbench.md)
 
 ## 🔧 TUI 行为
 
