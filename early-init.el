@@ -22,8 +22,9 @@
 ;; 2. 界面视觉优化 (防止启动闪烁)
 ;; ============================================
 
-;; 启动期不显示欢迎信息
-(setq inhibit-startup-message t)
+;; 启动期不显示欢迎信息与 splash screen
+(setq inhibit-startup-message t
+      inhibit-startup-screen t)
 
 ;; 禁用 UI 栏 (Emacs 30 这样写更高效)
 (push '(menu-bar-lines . 0) default-frame-alist)

@@ -6,8 +6,7 @@
 ;; 1. 基础 UI 行为
 ;; ============================================
 ;; UI 栏 (tool/menu/scroll-bar) 在 early-init.el 靠 default-frame-alist 提前禁用
-
-(setq inhibit-startup-screen t)
+;; inhibit-startup-screen 在 early-init.el 与 inhibit-startup-message 一并设置
 
 ;; 行号: prog-mode 显示, org-mode 关闭
 (setq display-line-numbers-type 'relative)
@@ -29,7 +28,6 @@
 ;; 避免 M-f/M-b 按视觉行跳、复制粘贴破坏列对齐
 (add-hook 'text-mode-hook #'visual-line-mode)
 (add-hook 'org-mode-hook #'visual-line-mode)
-(add-hook 'markdown-mode-hook #'visual-line-mode)
 (add-hook 'Info-mode-hook #'visual-line-mode)
 
 ;; ============================================
@@ -40,9 +38,7 @@
 ;; 旧版 Mac 暗色模式同步 hook 已删除 (config-gui.el 整体下线).
 
 (use-package catppuccin-theme
-  :ensure t
-  :custom
-  (catppuccin-flavor 'mocha))
+  :ensure t)
 
 (defvar my/theme-flavor 'mocha
   "当前 catppuccin flavor.
@@ -139,7 +135,7 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
      (treemacs-mode :select t :align left :size 30))))
 
 (winner-mode 1)
-(setq winner-bdose 50)                   ; winner undo/redo 最多 50 步, 默认 1 太浅
+(setq winner-ring-size 50)
 (repeat-mode 1)                          ; 按一次 M-o 进弹窗, 重复 n 一直水平分屏
 
 ;; windmove: S-<arrows> 移焦点, S-M-<arrows> 移窗 (2 窗时比 M-o 更轻)
@@ -190,21 +186,14 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
   :custom
   (dashboard-banner-logo-title "Thinking & Coding - 你的第二大脑")
   (dashboard-center-content t)
-  ;; TUI: 全部关掉 nerd-icons, 走 unicode 字符级
+  ;; TUI: 关掉 nerd-icons, 列表走纯文本
   (dashboard-display-icons-p nil)
-  (dashboard-icon-type nil)
-  (dashboard-set-heading-icons nil)
-  (dashboard-set-file-icons nil)
   ;; dashboard-items 是 alist: '(item-type . count), 顺序即渲染顺序.
   (dashboard-items '((recents  . 5)
                      (projects . 5)
                      (agenda   . 5)))
   (dashboard-projects-backend 'project-el)
-  ;; TUI 优化: 关掉 navigator (快捷按钮在窄终端意义不大) + footer (版权/统计)
-  (dashboard-set-navigator nil)
-  (dashboard-set-footer nil)
   (dashboard-week-agenda-trim-leading-zero t)
-  ;; TUI 关掉 footer (dashboard-set-footer nil), 列表里不再调用 dashboard-insert-footer
   (dashboard-startupify-list '(dashboard-insert-banner
                                dashboard-insert-newline
                                dashboard-insert-banner-title
@@ -222,13 +211,8 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
                    (length package-activated-list)
                    (emacs-init-time))
            'face 'font-lock-comment-face)))
-  ;; 替代 dashboard-setup-startup-hook, daemon 模式下 emacs-startup-hook
-  ;; 在第一个 frame 创建前已跑完, 装的内容会丢; 改挂到 server-after-make-frame-hook
-  ;; 才能在每个 emacsclient -t 连接时重新渲染 dashboard 内容.
-  ;;
-  ;; GUI 启动 (直接 emacs, 非 daemon) 走 emacs-startup-hook, 跑时 frame
-  ;; 已有 2 windows (dashboard + *Warnings* pop-up 强制 split). 我们的
-  ;; 清理 hook 主动关掉其他 window + 切到 dashboard.
+  ;; 替代 dashboard-setup-startup-hook: daemon 下 emacs-startup-hook 在首 frame
+  ;; 前已跑完; 改挂 server-after-make-frame-hook, 每个 emacsclient 连接时重绘.
   (when (< (length command-line-args) 2)
     (add-hook 'window-size-change-functions #'dashboard-resize-on-hook 100)
     (add-hook 'server-after-make-frame-hook
@@ -238,15 +222,6 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
                     (dashboard-insert-startupify-lists)
                     (switch-to-buffer dashboard-buffer-name)
                     (delete-other-windows)))))
-    ;; GUI 启动: emacs-startup-hook 跑时 GUI frame 已创建, 主动清理.
-    (add-hook 'emacs-startup-hook
-              (lambda ()
-                (when (and (display-graphic-p)
-                           (buffer-live-p (get-buffer dashboard-buffer-name)))
-                  (dashboard-insert-startupify-lists)
-                  (switch-to-buffer dashboard-buffer-name)
-                  (delete-other-windows)))
-              99)  ; 高优先级, 排在我们自己的 *Messages* 等之前
     (add-hook 'after-init-hook #'dashboard-insert-startupify-lists)))
 
 ;; initial-buffer-choice 必须在 use-package dashboard 块**外**直接 setq.

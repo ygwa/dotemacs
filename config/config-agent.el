@@ -16,6 +16,21 @@
 ;;                不需要额外工具. 手写 .md 用 M-x markdown-view-mode.
 ;; Transcript: 对话记录自动保存到项目根目录 .agent-shell/transcripts/
 
+(defun my/agent-shell-view-transcript ()
+  "在 markdown-mode 中打开当前会话的 transcript。"
+  (interactive)
+  (unless (derived-mode-p 'agent-shell-mode)
+    (user-error "Not in an agent-shell buffer"))
+  (when-let ((file agent-shell--transcript-file))
+    (let ((buf (find-file-noselect file)))
+      (with-current-buffer buf
+        (markdown-mode)
+        (read-only-mode 1))
+      (display-buffer buf
+                      '((display-buffer-reuse-window
+                         display-buffer-in-side-window)
+                        (side . right) (slot . 1) (window-width . 0.35))))))
+
 (use-package agent-shell
   :ensure t
   :init

@@ -38,26 +38,7 @@
   (agent-shell-toggle))
 
 ;; ============================================
-;; 3. Transcript查看函数
-;; ============================================
-
-(defun my/agent-shell-view-transcript ()
-  "在markdown-mode中打开当前会话的transcript"
-  (interactive)
-  (unless (derived-mode-p 'agent-shell-mode)
-    (user-error "Not in an agent-shell buffer"))
-  (when-let ((file agent-shell--transcript-file))
-    (let ((buf (find-file-noselect file)))
-      (with-current-buffer buf
-        (markdown-mode)
-        (read-only-mode 1))
-      (display-buffer buf
-                      '((display-buffer-reuse-window
-                         display-buffer-in-side-window)
-                        (side . right) (slot . 1) (window-width . 0.35))))))
-
-;; ============================================
-;; 4. 快捷键绑定
+;; 3. 快捷键绑定
 ;; ============================================
 
 ;; 文件树
@@ -71,9 +52,6 @@
                 (lambda ()
                   (interactive)
                   (delete-other-windows)))
-
-;; Transcript查看
-(global-set-key (kbd "C-c C-t") #'my/agent-shell-view-transcript)
 
 (provide 'config-workflow)
 ;;; config-workflow.el ends here

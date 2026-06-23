@@ -32,14 +32,18 @@ M-x customize-group my-config 改."
   ;; 基础快捷键
   (global-set-key (kbd "C-c l") #'org-store-link)
   (global-set-key (kbd "C-c a") #'org-agenda)
-  (global-set-key (kbd "C-c c") #'org-capture))
+  (global-set-key (kbd "C-c c") #'org-capture)
+
+  ;; dashboard agenda widget 需要显式扫描 org 文件
+  (setq org-agenda-files
+        (directory-files-recursively my/org-root-dir "\\.org\\'" t)))
 
 ;; ============================================
 ;; 2. Capture 模板 (只留 Inbox; Todo 走 org-agenda, 不在 capture 里)
 ;; ============================================
 
 (setq org-capture-templates
-      '(("i" "Inbox" entry (file+headline my/org-root-dir "Inbox")
+      '(("i" "Inbox" entry (file+headline org-default-notes-file "Inbox")
          "* %^{想法}\n%?" :empty-lines 1)))
 
 (provide 'config-org)

@@ -282,7 +282,6 @@
                    (message "Jinx 加载失败: %S (运行 `brew install enchant2 pkgconf` 修复)" err)
                    (jinx-mode -1))))))
   :config
-  :config
   ;; 排除 org/LaTeX 的字体锁 face, 避免语法标记被误判为错字
   (cl-callf
       (lambda (pl)

@@ -8,24 +8,18 @@
 
 ## 🎯 启动后第一眼
 
-真实 dashboard 缓冲区渲染（`emacs --batch` 抓取，无任何 mockup）：
+真实 dashboard 缓冲区渲染（TUI 纯文本，无 nerd-icons；`emacs --batch` 抓取）：
 
 ```text
 EMACS
 
 Thinking & Coding - 你的第二大脑
 
-[📥 Inbox] [🔭 Studies] [🏛️ Principles]
-[💻 Code]
-
-✦  79 packages  ·  loaded in 0.005731 seconds   ← `emacs --batch` 加载时间, GUI 实测约 0.8-1.5s
+✦  79 packages  ·  loaded in 0.005731 seconds   ← `emacs --batch` 加载时间, daemon 实测约 0.8-1.5s
 
 Recent Files: (r)
-    ~/Develop/github/dapei-skill/SKILL.md
-    ~/.emacs.d/bookmarks
-    ~/.emacs.d/.gitignore
     ~/.emacs.d/init.el
-    ~/Develop/github/dapei-skill/skills/cdr/SKILL.md
+    ...
 
 Projects: (p)
     ~/.emacs.d/
