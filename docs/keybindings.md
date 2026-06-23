@@ -53,7 +53,7 @@
 | 键位 | 命令 | 说明 |
 |---|---|---|
 | `C-c s r` | `eglot-rename` | 重命名符号 |
-| `C-c s f` | `eglot-format` | 格式化（apheleia 接管） |
+| `C-c s f` | `eglot-format` | LSP 格式化（Web 文件格式化优先用 `C-c C-f` apheleia） |
 | `C-c s a` | `eglot-code-actions` | 代码操作（Quick Fix） |
 | `C-c s h` | `eglot-help-at-point` | 光标处文档 |
 | `C-c s d` | `eglot-find-declaration` | 跳声明 |

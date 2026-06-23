@@ -27,8 +27,9 @@
 
 (use-package rainbow-delimiters
   :ensure t
+  :defer t
+  :hook (prog-mode . rainbow-delimiters-mode)
   :init
-  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
   (add-hook 'emacs-lisp-mode-hook #'rainbow-mode))
 
 ;; ============================================
@@ -37,6 +38,7 @@
 
 (use-package magit
   :ensure t
+  :defer t
   :bind ("C-x g" . magit-status)
   :config
   (setq magit-push-always-verify nil
@@ -48,11 +50,13 @@
 
 (use-package vterm
   :ensure t
+  :defer t
   :config
   (setq vterm-max-scrollback 10000))
 
 (use-package vterm-toggle
   :ensure t
+  :defer t
   :bind ("C-`" . vterm-toggle)
   :custom
   (vterm-toggle-scope 'project))
@@ -112,30 +116,33 @@
 
 (use-package consult
   :ensure t
-  :config
-  (global-set-key (kbd "C-s") 'consult-line)
-  (global-set-key (kbd "C-M-s") 'consult-line-multi)
-  (global-set-key (kbd "C-x b") 'consult-buffer)
-  (global-set-key (kbd "M-y") 'consult-yank-pop)
-  (global-set-key (kbd "C-x r b") 'consult-bookmark)
-  (global-set-key (kbd "C-c C-r") 'consult-recent-file)
-  (global-set-key (kbd "C-c g") 'consult-git-grep)
-  (global-set-key (kbd "C-c k") 'consult-ripgrep)
-  (global-set-key (kbd "C-x l") 'consult-locate)
-  (global-set-key (kbd "<f1> f") 'consult-describe-function)
-  (global-set-key (kbd "<f1> v") 'consult-describe-variable)
-  (global-set-key (kbd "<f1> l") 'consult-find-library)
-  (global-set-key (kbd "<f2> i") 'consult-info-lookup-symbol)
-  (global-set-key (kbd "<f2> u") 'consult-unicode-char)
-  (global-set-key (kbd "<f6>") 'consult-buffer)
-  (define-key read-expression-map (kbd "C-r") 'consult-expression-history))
+  :defer t
+  :bind
+  (("C-s" . consult-line)
+   ("C-M-s" . consult-line-multi)
+   ("C-x b" . consult-buffer)
+   ("M-y" . consult-yank-pop)
+   ("C-x r b" . consult-bookmark)
+   ("C-c C-r" . consult-recent-file)
+   ("C-c g" . consult-git-grep)
+   ("C-c k" . consult-ripgrep)
+   ("C-x l" . consult-locate)
+   ("<f1> f" . consult-describe-function)
+   ("<f1> v" . consult-describe-variable)
+   ("<f1> l" . consult-find-library)
+   ("<f2> i" . consult-info-lookup-symbol)
+   ("<f2> u" . consult-unicode-char)
+   ("<f6>" . consult-buffer)
+   :map read-expression-map
+   ("C-r" . consult-expression-history)))
 
 (use-package embark
   :ensure t
-  :config
-  (global-set-key (kbd "C-.") 'embark-act)
-  (global-set-key (kbd "C-;") 'embark-dwim)
-  (global-set-key (kbd "C-h B") 'embark-bindings))
+  :defer t
+  :bind
+  (("C-." . embark-act)
+   ("C-;" . embark-dwim)
+   ("C-h B" . embark-bindings)))
 
 (use-package embark-consult
   :ensure t
@@ -144,15 +151,18 @@
 
 (use-package marginalia
   :ensure t
+  :defer t
+  :after vertico
   :init
   (marginalia-mode))
 
 (use-package avy
   :ensure t
-  :config
-  (global-set-key (kbd "C-c j") 'avy-goto-char)
-  (global-set-key (kbd "C-c J") 'avy-goto-line)
-  (global-set-key (kbd "C-c W") 'avy-goto-word-1))
+  :defer t
+  :bind
+  (("C-c j" . avy-goto-char)
+   ("C-c J" . avy-goto-line)
+   ("C-c W" . avy-goto-word-1)))
 
 ;; ============================================
 ;; 6. 环境变量
@@ -182,10 +192,11 @@
 
 (use-package smartparens
   :ensure t
+  :defer t
   :diminish smartparens-mode
+  :hook (prog-mode . smartparens-strict-mode)
   :config
-  (require 'smartparens-config)
-  (smartparens-global-mode 1))
+  (require 'smartparens-config))
 
 (use-package youdao-dictionary
   :ensure t
@@ -194,15 +205,6 @@
   (setq url-automatic-caching t)
   :config
   (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point+))
-
-;; 建立模式映射，当打开 .yaml/.json 时自动使用 Tree-sitter 模式
-(setq major-mode-remap-alist
-      '((yaml-mode . yaml-ts-mode)
-        (js-mode . js-ts-mode)
-        (typescript-mode . typescript-ts-mode)
-        (json-mode . json-ts-mode)
-        (css-mode . css-ts-mode)
-        (python-mode . python-ts-mode)))
 
 ;; ============================================
 ;; 9. Eglot LSP (Emacs 30 内置)
@@ -371,27 +373,9 @@
                            ('gnu/linux "提示: 未找到 rust-analyzer。推荐:\n  rustup component add rust-analyzer\n  或从 https://github.com/rust-lang/rust-analyzer/releases 下载预编译二进制放到 PATH")
                            (_ "提示: 未找到 rust-analyzer。请访问 https://rust-analyzer.github.io/ 安装。")))))))
 
-;; ============================================
-;; 10. Tree-sitter (Emacs 30 内置)
-;; ============================================
-
 (when (>= emacs-major-version 30)
-  (setq treesit-font-lock-level 4)
-  (setq treesit-extra-load-path
-        (list (expand-file-name "tree-sitter" user-emacs-directory)))
-  
-  ;; Rust
-  (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
-  
   (with-eval-after-load 'rust-ts-mode
-    (setq rust-ts-mode-indent-offset 4)
-    (define-key rust-ts-mode-map (kbd "C-c C-f") 'eglot-format-buffer))
-  
-  (add-hook 'rust-ts-mode-hook
-            (lambda ()
-              (when (and (fboundp 'treesit-ready-p)
-                         (not (treesit-ready-p 'rust)))
-                (message "提示: Rust Tree-sitter 语法库未安装。运行 M-x treesit-install-language-grammar RET rust RET 安装。")))))
+    (define-key rust-ts-mode-map (kbd "C-c C-f") 'eglot-format-buffer)))
 
 (provide 'config-package)
 ;;; config-package.el ends here

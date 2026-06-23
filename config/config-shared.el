@@ -18,7 +18,7 @@
 ;; ============================================
 
 (setq which-key-idle-delay 0.5)
-(which-key-mode)
+(add-hook 'after-init-hook #'which-key-mode)
 
 (editorconfig-mode 1)
 

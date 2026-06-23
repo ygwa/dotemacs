@@ -33,6 +33,7 @@
 
 (use-package agent-shell
   :ensure t
+  :defer t
   :init
   ;; 上下文自动注入: 光标处 region / 文件 / 错误行 / 当前行
   (setq agent-shell-context-sources '(files region error line)

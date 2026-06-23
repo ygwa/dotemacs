@@ -39,6 +39,7 @@ Agenda for the coming week: (a)
 │   ├── config-default.el  # 基础设置（编码/dired/cursor）
 │   ├── config-org.el      # Org 模式 + Inbox capture
 │   ├── config-shared.el   # TUI UI（catppuccin/doom-modeline/dashboard/window）
+│   ├── config-treesit.el  # Tree-sitter 语法库源、mode remap、一键安装
 │   ├── config-package.el  # 包管理 + 编程工具（vertico/corfu/consult/eglot）
 │   ├── config-markdown.el # Markdown 编辑与预览
 │   ├── config-web.el      # Web 前端（tree-sitter/apheleia/eglot）
@@ -66,7 +67,7 @@ git clone <repo> ~/.emacs.d
 `init.el` → `early-init.el` 先跑（GC/frame/native-comp）→ 主入口 `require` 顺序：
 
 ```
-config-default  →  config-org  →  config-shared
+config-default  →  config-org  →  config-shared  →  config-treesit
                 →  config-web  →  config-package →  config-markdown
                 →  config-agent →  config-workflow
 ```
@@ -130,15 +131,22 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 
 ### LSP（eglot，编程 buffer 内）⭐
 
-| 键 | 命令 |
-|---|---|
-| `C-c s r` | 重命名 |
-| `C-c s f` | 格式化（apheleia）|
-| `C-c s a` | 代码操作 |
-| `C-c s h` | 帮助 |
-| `C-c s d` | 跳声明 |
-| `C-c s i` | 跳实现 |
-| `C-c s t` | 跳类型定义 |
+| 键 | 命令 | 说明 |
+|---|---|---|
+| `C-c s r` | 重命名 | |
+| `C-c s f` | `eglot-format` | LSP 格式化（所有 eglot buffer）|
+| `C-c s a` | 代码操作 | |
+| `C-c s h` | 帮助 | |
+| `C-c s d` | 跳声明 | |
+| `C-c s i` | 跳实现 | |
+| `C-c s t` | 跳类型定义 | |
+
+### 文件格式化（mode 内）
+
+| 键 | 命令 | 适用 |
+|---|---|---|
+| `C-c C-f` | `apheleia-format-buffer` | TS/TSX/JS/CSS/JSON/HTML（Prettier）|
+| `C-c C-f` | `eglot-format-buffer` | `rust-ts-mode` |
 
 ### Web / Node
 

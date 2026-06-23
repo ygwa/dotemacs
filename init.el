@@ -65,6 +65,7 @@
 (mapc #'require '(config-default
 		  config-org
                   config-shared
+                  config-treesit
 		  config-web
                   config-package
                   config-markdown
