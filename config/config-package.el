@@ -16,7 +16,7 @@
          ("C-c p b" . project-switch-to-buffer)
          ("C-c p d" . project-dired)
          ("C-c p v" . project-vc-dir)
-         ("C-c p s" . project-shell)
+         ;; C-c p s → eat-project (见 eat 配置块)
          ("C-c p g" . project-find-regexp))
   :config
   ;; 增强非 Git 项目识别（例如只有 package.json 的前端项目）
@@ -45,21 +45,32 @@
         magit-revert-buffers t))
 
 ;; ============================================
-;; 3. 终端
+;; 3. 终端 (Eat — 纯 Elisp, NonGNU ELPA)
 ;; ============================================
 
-(use-package vterm
-  :ensure t
-  :defer t
-  :config
-  (setq vterm-max-scrollback 10000))
+(defun my/eat-toggle ()
+  "Toggle Eat terminal for current project (show/hide project-scoped buffer)."
+  (interactive)
+  (require 'eat)
+  (require 'project)
+  (let* ((name (project-prefixed-buffer-name "eat"))
+         (buf (get-buffer name)))
+    (if (and buf (get-buffer-window buf))
+        (delete-window (get-buffer-window buf))
+      (eat-project))))
 
-(use-package vterm-toggle
+(use-package eat
   :ensure t
   :defer t
-  :bind ("C-`" . vterm-toggle)
   :custom
-  (vterm-toggle-scope 'project))
+  (eat-term-scrollback-size 10000)
+  (eat-enable-directory-tracking t)
+  :config
+  (global-set-key (kbd "C-`") #'my/eat-toggle))
+
+;; C-c p s 也走项目根目录 Eat (原 project-shell)
+(with-eval-after-load 'project
+  (define-key project-prefix-map (kbd "s") #'eat-project))
 
 ;; ============================================
 ;; 4. 代码补全 (Corfu + Cape)
