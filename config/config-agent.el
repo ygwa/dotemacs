@@ -8,6 +8,8 @@
 ;;   C-c C-s   agent-shell-new-shell       新建会话 (不同项目/任务用)
 ;;   C-c C-o   agent-shell-opencode-start  直接起 OpenCode (跳过选 provider)
 ;;   C-c C-t   my/agent-shell-view-transcript  在 markdown 中查看对话记录
+;;   C-c C-d   my/magit-send-diff-to-agent / my/markdown-send-to-agent
+;;             把 diff 或文档插入 agent 输入区 (无 preset prompt)
 ;;
 ;; 多轮对话: agent-shell-prefer-session-resume t (默认),
 ;;           OpenCode session 由 OpenCode 自己存, 重启 Emacs 可续.
@@ -15,6 +17,66 @@
 ;; Markdown 渲染: agent 输出在 comint buffer 里被 markdown-overlays 渲染,
 ;;                不需要额外工具. 手写 .md 用 M-x markdown-view-mode.
 ;; Transcript: 对话记录自动保存到项目根目录 .agent-shell/transcripts/
+
+;; ============================================
+;; 0. Agent 审阅桥 (Phase 1 / 2 — 无 preset prompt)
+;; ============================================
+
+(defun my/agent-shell-ensure-shell ()
+  "Ensure an agent-shell buffer exists for the current project."
+  (require 'agent-shell)
+  (unless (agent-shell--shell-buffer :no-create t)
+    (agent-shell-toggle))
+  (agent-shell--shell-buffer))
+
+(defun my/agent-shell-send-text (text &optional submit)
+  "Insert TEXT into the project agent-shell (SUBMIT nil = 仅插入, 不自动发送)."
+  (unless (and text (not (string-empty-p (string-trim text))))
+    (user-error "Nothing to send to agent shell"))
+  (require 'agent-shell)
+  (my/agent-shell-ensure-shell)
+  (agent-shell-insert :text text :submit submit))
+
+(defun my/magit--current-file ()
+  "Return file path at Magit section, if any."
+  (when-let* ((section (magit-current-section))
+              (type (magit-section-type section)))
+    (when (memq type '(file unstaged staged untracked))
+      (magit-section-value section))))
+
+(defun my/magit--diff-text ()
+  "Collect git diff text appropriate for the current Magit context."
+  (require 'magit)
+  (let ((default-directory (or (magit-toplevel) default-directory)))
+    (unless default-directory
+      (user-error "Not in a git repository"))
+    (cond
+     ((or (derived-mode-p 'magit-log-mode)
+          (derived-mode-p 'magit-reflog-mode))
+      (when-let ((commit (magit-section-value (magit-current-section))))
+        (magit-git-string "show" "--format=" commit)))
+     ((derived-mode-p 'magit-diff-mode)
+      (buffer-substring-no-properties (point-min) (point-max)))
+     (t
+      (let ((file (my/magit--current-file)))
+        (if file
+            (magit-git-string "diff" "HEAD" "--" file)
+          (magit-git-string "diff" "HEAD")))))))
+
+(defun my/magit-send-diff-to-agent ()
+  "Insert current Magit diff into agent-shell input (no preset prompt)."
+  (interactive)
+  (when-let ((text (my/magit--diff-text)))
+    (my/agent-shell-send-text text nil)))
+
+(defun my/markdown-send-to-agent ()
+  "Insert Markdown region or buffer into agent-shell input (no preset prompt)."
+  (interactive)
+  (my/agent-shell-send-text
+   (if (use-region-p)
+       (buffer-substring-no-properties (region-beginning) (region-end))
+     (buffer-substring-no-properties (point-min) (point-max)))
+   nil))
 
 (defun my/agent-shell-view-transcript ()
   "在 markdown-mode 中打开当前会话的 transcript。"
@@ -80,6 +142,12 @@
    ("C-c C-s" . agent-shell-new-shell)
    ("C-c C-o" . agent-shell-opencode-start-agent)
    ("C-c C-t" . my/agent-shell-view-transcript)))
+
+(with-eval-after-load 'embark
+  (add-to-list 'embark-general-alt-commands
+               '(my/magit-send-diff-to-agent . "Send git diff to agent shell"))
+  (add-to-list 'embark-general-alt-commands
+               '(my/markdown-send-to-agent . "Send Markdown to agent shell")))
 
 ;; ============================================
 ;; 2. OpenCode provider 配置
