@@ -132,7 +132,11 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
      ;; Embark 收集器: 右侧
      (embark-collect-mode :select t :align right :size 0.4)
      ;; Treemacs 文件树: 左侧
-     (treemacs-mode :select t :align left :size 30))))
+     (treemacs-mode :select t :align left :size 30)
+     ;; AI workbench buffers
+     ("\\*AI-Plan\\*" :select t :align right :size 0.35)
+     ("\\*AI-Review\\*" :select t :align right :size 0.45)
+     ("\\*AI-Log\\*" :select nil :align bottom :size 0.22))))
 
 (winner-mode 1)
 (setq winner-ring-size 50)
@@ -184,7 +188,7 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
   ;; 这里 fset 不会失效因为我们只用自己的渲染逻辑.
   (fset 'dashboard-setup-startup-hook (lambda () "noop"))
   :custom
-  (dashboard-banner-logo-title "Thinking & Coding - 你的第二大脑")
+  (dashboard-banner-logo-title "AI 工作台")
   (dashboard-center-content t)
   ;; TUI: 关掉 nerd-icons, 列表走纯文本
   (dashboard-display-icons-p nil)
