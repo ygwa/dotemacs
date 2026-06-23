@@ -44,7 +44,10 @@ M-x customize-group my-config 改."
 
 (setq org-capture-templates
       '(("i" "Inbox" entry (file+headline org-default-notes-file "Inbox")
-         "* %^{想法}\n%?" :empty-lines 1)))
+         "* %^{想法}\n%?" :empty-lines 1)
+        ("a" "AI Task" entry (file+headline org-default-notes-file "Inbox")
+         "* TODO %^{Task}\n:PROPERTIES:\n:AI_TASK: t\n:AI_PROFILE: coder\n:END:\n\nContext:\n- \n\n%?"
+         :empty-lines 1)))
 
 (provide 'config-org)
 ;;; config-org.el ends here

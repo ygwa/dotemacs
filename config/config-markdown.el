@@ -46,7 +46,22 @@
   ;; ============================================
 
   (define-key markdown-mode-map (kbd "C-c C-p") #'markdown-preview)
-  (define-key markdown-mode-map (kbd "C-c C-e") #'markdown-export))
+  (define-key markdown-mode-map (kbd "C-c C-e") #'markdown-export)
+  (define-key markdown-mode-map (kbd "C-c C-d") #'my/markdown-send-to-agent))
+
+;; ============================================
+;; 2. Markdown lint (Phase 2 — flymake + markdownlint-cli)
+;; ============================================
+;; 依赖: brew install markdownlint-cli  (或 npm i -g markdownlint-cli)
+;; 未安装时静默跳过, 不影响编辑.
+
+(use-package flymake-markdownlint
+  :ensure t
+  :defer t
+  :when (executable-find "markdownlint")
+  :hook (markdown-mode . flymake-markdownlint-setup)
+  :config
+  (add-hook 'markdown-mode-hook #'flymake-mode 90))
 
 ;; ============================================
 ;; Tree-sitter 增强 (Emacs 30+)
