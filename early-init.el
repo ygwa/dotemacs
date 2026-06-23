@@ -65,5 +65,14 @@
 ;; 提高单行长文本的渲染性能 (针对 Org 里的超长链接或表格)
 (setq-default bidi-inhibit-bpa t)
 
+;; ============================================
+;; 6. 禁用 initial frame 自动 split
+;; ============================================
+;; emacs --daemon 启动时, 内部 initial frame 默认 80 列高会触发
+;; split-window-sensibly, 自动开 *scratch* + dashboard 两个 window.
+;; 关掉自动 split, 显式 C-x 2/3 仍正常工作.
+(setq split-height-threshold nil
+      split-width-threshold nil)
+
 (provide 'early-init)
 ;;; early-init.el ends here

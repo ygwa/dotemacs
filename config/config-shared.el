@@ -173,8 +173,21 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
 
 (use-package dashboard
   :ensure t
+  :init
+  ;; 抑制 dashboard.el 包自带的 dashboard-setup-startup-hook (L591-598),
+  ;; 那个 hook 会 (add-hook 'emacs-startup-hook #'dashboard-initialize).
+  ;; 在直接 `emacs' (非 daemon) 启动时, emacs-startup-hook 跑时只有一个
+  ;; window, dashboard-initialize 调 (switch-to-buffer) 后 display-buffer
+  ;; 行为触发 split-window-sensibly 强制 vertical split, 结果 frame 出现
+  ;; 2 个 window (dashboard + scratch). daemon 模式下问题不同 (我们单独用
+  ;; server-after-make-frame-hook 接管).
+  ;;
+  ;; 解决: 在 dashboard 包加载 autoload 前, 用 defalias 把
+  ;; dashboard-setup-startup-hook 替换成 noop. dashboard autoload
+  ;; 触发的就是 (require 'dashboard), 加载后我们用 fset 覆盖原函数.
+  ;; 这里 fset 不会失效因为我们只用自己的渲染逻辑.
+  (fset 'dashboard-setup-startup-hook (lambda () "noop"))
   :custom
-  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
   (dashboard-banner-logo-title "Thinking & Coding - 你的第二大脑")
   (dashboard-center-content t)
   ;; TUI: 全部关掉 nerd-icons, 走 unicode 字符级
@@ -212,6 +225,10 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
   ;; 替代 dashboard-setup-startup-hook, daemon 模式下 emacs-startup-hook
   ;; 在第一个 frame 创建前已跑完, 装的内容会丢; 改挂到 server-after-make-frame-hook
   ;; 才能在每个 emacsclient -t 连接时重新渲染 dashboard 内容.
+  ;;
+  ;; GUI 启动 (直接 emacs, 非 daemon) 走 emacs-startup-hook, 跑时 frame
+  ;; 已有 2 windows (dashboard + *Warnings* pop-up 强制 split). 我们的
+  ;; 清理 hook 主动关掉其他 window + 切到 dashboard.
   (when (< (length command-line-args) 2)
     (add-hook 'window-size-change-functions #'dashboard-resize-on-hook 100)
     (add-hook 'server-after-make-frame-hook
@@ -219,8 +236,28 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
                 (when (buffer-live-p (get-buffer dashboard-buffer-name))
                   (with-selected-frame (selected-frame)
                     (dashboard-insert-startupify-lists)
-                    (switch-to-buffer dashboard-buffer-name)))))
+                    (switch-to-buffer dashboard-buffer-name)
+                    (delete-other-windows)))))
+    ;; GUI 启动: emacs-startup-hook 跑时 GUI frame 已创建, 主动清理.
+    (add-hook 'emacs-startup-hook
+              (lambda ()
+                (when (and (display-graphic-p)
+                           (buffer-live-p (get-buffer dashboard-buffer-name)))
+                  (dashboard-insert-startupify-lists)
+                  (switch-to-buffer dashboard-buffer-name)
+                  (delete-other-windows)))
+              99)  ; 高优先级, 排在我们自己的 *Messages* 等之前
     (add-hook 'after-init-hook #'dashboard-insert-startupify-lists)))
+
+;; initial-buffer-choice 必须在 use-package dashboard 块**外**直接 setq.
+;; 之前在 :custom 里写 (initial-buffer-choice (lambda ...)) 实际被
+;; use-package 展开成 (custom-theme-set-variables ...) 设到 use-package
+;; 的 synthetic theme 里, 立即 remq theme, 变量值在 theme-local 表,
+;; **不修改 global initial-buffer-choice** — 它仍是默认 nil,
+;; emacsclient 因此 fallback 到 *scratch*. 单独 setq 写 global 变量,
+;; 立即生效.
+(setq initial-buffer-choice
+      (lambda () (get-buffer-create dashboard-buffer-name)))
 
 ;; ============================================
 ;; 8. 其它细节
