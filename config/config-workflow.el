@@ -1,38 +1,21 @@
 ;;; config-workflow.el --- AI-assisted development workflow -*- lexical-binding: t; -*-
 
 ;; ============================================
-;; 1. Treemacs 文件树
+;; 1. Sidebar (formerly treemacs)
 ;; ============================================
-
-(use-package treemacs
-  :ensure t
-  :defer t
-  :config
-  (setq treemacs-width 30
-        treemacs-is-never-other-window t
-        treemacs-show-hidden-files t
-        ;; treemacs-no-png-images 由 config-display-tui / config-gui profile 预设
-        treemacs-sorting 'alphabetic-asc
-        treemacs-follow-after-init t
-        treemacs-collapse-dirs 3
-        treemacs-silence-other-window-warning t)
-  (treemacs-follow-mode t)
-  (treemacs-filewatch-mode t))
-
-(use-package treemacs-magit
-  :ensure t
-  :after (treemacs magit))
+;; 不再用 treemacs (依赖膨胀 ~15 包, TUI/GUI 表现参差).
+;; my/sidebar-* 来自 lisp/my-sidebar.el, 是基于 dired + project.el 的轻量替代.
+;; 这里只绑键位, 不 require 任何包.
 
 ;; ============================================
 ;; 2. 工作流布局函数
 ;; ============================================
 
 (defun my/workflow-layout ()
-  "设置AI开发工作流布局：左侧treemacs，右侧代码+AI面板"
+  "AI 工作流布局: 左 sidebar (dired @ 项目根) + 右 agent 面板."
   (interactive)
-  ;; 先清空所有窗口, shackle autoclose 弹的窗也会一起被清掉
   (delete-other-windows)
-  (treemacs)
+  (my/sidebar-open)
   (other-window 1)
   (agent-shell-toggle))
 
@@ -117,10 +100,10 @@
 ;; 5. 快捷键绑定
 ;; ============================================
 
-;; 文件树
-(global-set-key (kbd "C-x t 1") #'treemacs-select-window)
-(global-set-key (kbd "C-x t t") #'treemacs)
-(global-set-key (kbd "C-x t d") #'treemacs-delete-other-windows)
+;; Sidebar (替代原 treemacs-*)
+(global-set-key (kbd "C-x t t") #'my/sidebar-open)
+(global-set-key (kbd "C-x t 1") #'my/sidebar-toggle)
+(global-set-key (kbd "C-x t d") #'my/sidebar-toggle)
 
 ;; 工作流布局
 (global-set-key (kbd "C-c f l") #'my/workflow-layout)
