@@ -17,7 +17,22 @@
   (delete-other-windows)
   (my/sidebar-open)
   (other-window 1)
-  (agent-shell-toggle))
+  (when (memq 'ai my/features)
+    (require 'agent-shell)
+    (agent-shell-toggle)))
+
+(defun my/review-layout ()
+  "审阅布局: 左 sidebar + 本地 diff 进 *AI-Review* + 右 agent 面板."
+  (interactive)
+  (delete-other-windows)
+  (my/sidebar-open)
+  (other-window 1)
+  (unless (memq 'ai my/features)
+    (user-error "Enable `ai' in `my/features' for review layout"))
+  (require 'config-ai)
+  (my/ai-review-local)
+  (require 'config-agent)
+  (my/agent-shell-ensure-shell))
 
 ;; ============================================
 ;; 3. 多项目布局持久化 (Phase 4)
@@ -107,6 +122,7 @@
 
 ;; 工作流布局
 (global-set-key (kbd "C-c f l") #'my/workflow-layout)
+(global-set-key (kbd "C-c f r") #'my/review-layout)
 (global-set-key (kbd "C-c f c")
                 (lambda ()
                   (interactive)

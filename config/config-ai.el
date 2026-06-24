@@ -14,6 +14,7 @@
 ;; ============================================
 
 (require 'my-project)
+(require 'my-markdown)
 
 (defgroup my-ai nil
   "AI workbench (Agent OS layer)."
@@ -105,6 +106,12 @@
                       (side . right) (slot . 2) (window-width . 0.4)))
     buf))
 
+(defun my/ai--show-review (content source)
+  "Show review CONTENT in `my/ai--review-buffer' with SOURCE metadata."
+  (with-current-buffer (my/ai-show-buffer my/ai--review-buffer content #'my/ai-review-mode)
+    (put-text-property (point-min) (point-max) 'my/ai-review-source source))
+  (my/ai-log (format "Review loaded: %s" source)))
+
 (defun my/ai-send-buffer-to-agent (buffer-name)
   "Insert contents of BUFFER-NAME into agent-shell (no auto submit)."
   (require 'config-agent)
@@ -131,10 +138,14 @@
 ;; §2 Review — 本地 diff review workflow
 ;; ============================================
 
+(defconst my/ai-review--untracked-max-bytes (* 512 1024)
+  "Skip untracked files larger than this when building local diff review.")
+
 (defvar my/ai-review-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-w a") #'my/ai-send-active-to-agent)
     (define-key map (kbd "C-c C-w S") #'my/ai-review-save)
+    (define-key map (kbd "C-c C-d") #'my/markdown-send-to-agent)
     map)
   "Keymap for `my/ai-review-mode'.")
 
@@ -142,28 +153,75 @@
   "Major mode for *AI-Review* buffers."
   :group 'my-ai
   (setq buffer-read-only t)
-  (use-local-map my/ai-review-mode-map))
+  (use-local-map my/ai-review-mode-map)
+  (my/markdown-review-setup t))
+
+(defun my/ai-review--untracked-diff-chunk (file)
+  "Return unified-diff text for untracked FILE, or nil if skipped."
+  (let ((full (expand-file-name file)))
+    (when (file-regular-p full)
+      (let ((size (file-attribute-size (file-attributes full))))
+        (cond
+         ((and size (> size my/ai-review--untracked-max-bytes))
+          (format "diff --git a/dev/null b/%s\nnew file (skipped, %s bytes)\n"
+                  file size))
+         ((file-exists-p full)
+          (let ((lines (with-temp-buffer
+                         (insert-file-contents full)
+                         (split-string (buffer-string) "\n" t))))
+            (concat
+             (format "diff --git a/dev/null b/%s\nnew file mode 100644\n--- /dev/null\n+++ b/%s\n"
+                     file file)
+             (mapconcat (lambda (line) (concat "+" line)) lines "\n")
+             "\n"))))))))
 
 (defun my/ai-review--local-diff-text ()
-  "Return `git diff HEAD' text for current project."
+  "Return working-tree diff vs HEAD, including new untracked files."
   (my/ai-with-project-default-directory
    (lambda ()
      (require 'magit)
-     (or (magit-git-string "diff" "HEAD")
-         (user-error "No diff to review")))))
+     (let* ((tracked (or (magit-git-string "diff" "HEAD") ""))
+            (untracked
+             (cl-loop for file in (split-string
+                                   (or (magit-git-string
+                                        "ls-files" "--others" "--exclude-standard")
+                                       "")
+                                   "\n" t)
+                      when (not (string-empty-p file))
+                      for chunk = (my/ai-review--untracked-diff-chunk file)
+                      when chunk
+                      collect chunk)))
+       (unless (or (not (string-empty-p (string-trim tracked))) untracked)
+         (user-error "No local changes to review"))
+       (string-trim
+        (string-join (delq nil (list tracked
+                                     (when untracked
+                                       (string-join untracked "\n"))))
+                     "\n"))))))
+
+(defun my/ai-review--local-diff-content ()
+  "Return Markdown body for a local working-tree review."
+  (my/ai-with-project-default-directory
+   (lambda ()
+     (require 'magit)
+     (let* ((root (my/project-root))
+            (status (or (magit-git-string "status" "--short" "--branch") ""))
+            (diff (my/ai-review--local-diff-text)))
+       (format (concat "# Local diff review\n\n"
+                       "Working tree vs HEAD (includes AI edits, staged/unstaged, new files).\n\n"
+                       "Project: `%s`\n\n"
+                       "## Status\n\n```text\n%s\n```\n\n"
+                       "## Diff\n\n```diff\n%s\n```")
+               (file-name-nondirectory (directory-file-name root))
+               status
+               diff)))))
 
 (defun my/ai-review-local ()
-  "Collect local git diff into *AI-Review* (no preset prompt)."
+  "Load local working-tree diff into *AI-Review* (no preset prompt)."
   (interactive)
   (my/ai-bootstrap-project)
-  (let* ((root (my/project-root))
-         (diff (my/ai-review--local-diff-text))
-         (content (format "# Local review\n\nProject: `%s`\n\n```diff\n%s\n```"
-                          (file-name-nondirectory (directory-file-name root))
-                          diff)))
-    (with-current-buffer (my/ai-show-buffer my/ai--review-buffer content #'my/ai-review-mode)
-      (put-text-property (point-min) (point-max) 'my/ai-review-source 'local))
-    (my/ai-log "Local diff loaded into *AI-Review*")))
+  (my/ai--show-review (my/ai-review--local-diff-content) 'local)
+  (message "Local diff → *AI-Review* (C-c C-w a to send to agent)"))
 
 (defun my/ai-review-send-to-agent ()
   "Send *AI-Review* buffer to agent-shell."
@@ -275,10 +333,7 @@
             (data (my/ai--github-pr-fetch id))
             (content (format "# GitHub PR %s\n\n%s\n\n---\n\n```diff\n%s\n```"
                              id (cdr (assq 'meta data)) (cdr (assq 'diff data)))))
-       (with-current-buffer (my/ai-show-buffer my/ai--review-buffer content #'my/ai-review-mode)
-         (put-text-property (point-min) (point-max)
-                            'my/ai-review-source (list 'github id)))
-       (my/ai-log (format "GitHub PR %s loaded" id))
+       (my/ai--show-review content (list 'github id))
        (message "GitHub PR %s → *AI-Review*" id)))))
 
 ;; ---- GitLab (glab) ----
@@ -316,14 +371,51 @@
             (data (my/ai--gitlab-mr-fetch id))
             (content (format "# GitLab MR %s\n\n%s\n\n---\n\n```diff\n%s\n```"
                              id (cdr (assq 'meta data)) (cdr (assq 'diff data)))))
-       (with-current-buffer (my/ai-show-buffer my/ai--review-buffer content #'my/ai-review-mode)
-         (put-text-property (point-min) (point-max)
-                            'my/ai-review-source (list 'gitlab id)))
-       (my/ai-log (format "GitLab MR %s loaded" id))
+       (my/ai--show-review content (list 'gitlab id))
        (message "GitLab MR %s → *AI-Review*" id)))))
 
+(defun my/ai--review-choices ()
+  "Return alist of (ID . LABEL) review sources available for current project."
+  (let ((choices '(("local" . "Local diff (working tree / AI edits)"))))
+    (when (executable-find "gh")
+      (push '("github" . "GitHub PR") choices))
+    (when (executable-find "glab")
+      (push '("gitlab" . "GitLab MR") choices))
+    (nreverse choices)))
+
+(defun my/ai--review-run (kind)
+  "Load review material for KIND (`local', `github', or `gitlab')."
+  (pcase kind
+    ("local" (my/ai-review-local))
+    ("github" (my/ai-pr-review-github))
+    ("gitlab" (my/ai-pr-review-gitlab))
+    (_ (user-error "Unknown review kind: %s" kind))))
+
+(defun my/ai-review ()
+  "Pick review source: local diff, GitHub PR, or GitLab MR."
+  (interactive)
+  (my/ai-bootstrap-project)
+  (let* ((choices (my/ai--review-choices))
+         (kind (my/ai--forge-kind))
+         (auto (pcase kind
+                 (github (and (executable-find "gh") "github"))
+                 (gitlab (and (executable-find "glab") "gitlab"))
+                 (_ nil))))
+    (if (= (length choices) 1)
+        (my/ai--review-run (caar choices))
+      (let* ((labels (mapcar #'cdr choices))
+             (pick (completing-read
+                    (if auto
+                        (format "Review (Enter = %s): "
+                                (cdr (assoc auto choices)))
+                      "Review: ")
+                    labels nil t nil nil
+                    (cdr (assoc auto choices)))))
+        (my/ai--review-run (car (rassoc pick choices)))))))
+
 (defun my/ai-pr-review ()
-  "Review PR/MR: auto-detect forge or ask GitHub vs GitLab."
+  "Review PR/MR: auto-detect forge or ask GitHub vs GitLab.
+Legacy alias; prefer `my/ai-review' for local diff + PR/MR."
   (interactive)
   (my/ai-bootstrap-project)
   (let ((kind (my/ai--forge-kind))
@@ -342,15 +434,29 @@
      (has-glab (my/ai-pr-review-gitlab))
      (t (user-error "Install `gh' (GitHub) and/or `glab' (GitLab)")))))
 
-(defun my/ai-pr-review-send-to-agent ()
-  "Send *AI-Review* to agent; run `my/ai-pr-review' first if empty."
+(defun my/ai-review--buffer-ready-p ()
+  (and (get-buffer my/ai--review-buffer)
+       (> (buffer-size (get-buffer my/ai--review-buffer)) 0)))
+
+(defun my/ai-review-send-or-load (&optional kind)
+  "Send *AI-Review* to agent; if empty, load KIND (or ask) first."
   (interactive)
-  (if (and (get-buffer my/ai--review-buffer)
-           (> (buffer-size (get-buffer my/ai--review-buffer)) 0))
-      (my/ai-review-send-to-agent)
-    (my/ai-pr-review)
-    (when (get-buffer my/ai--review-buffer)
-      (my/ai-review-send-to-agent))))
+  (unless (my/ai-review--buffer-ready-p)
+    (if kind
+        (my/ai--review-run kind)
+      (my/ai-review)))
+  (when (my/ai-review--buffer-ready-p)
+    (my/ai-review-send-to-agent)))
+
+(defun my/ai-review-local-send-to-agent ()
+  "Load local diff into *AI-Review* and send to agent."
+  (interactive)
+  (my/ai-review-send-or-load "local"))
+
+(defun my/ai-pr-review-send-to-agent ()
+  "Send *AI-Review* to agent; run `my/ai-review' first if empty."
+  (interactive)
+  (my/ai-review-send-or-load))
 
 ;; ============================================
 ;; §4 Memory — 项目 memory & ADR
@@ -563,11 +669,12 @@
     (define-key map (kbd "a") #'my/ai-send-active-to-agent)
     (define-key map (kbd "r") #'my/ai-review-local)
     (define-key map (kbd "R") #'my/ai-review-send-to-agent)
+    (define-key map (kbd "A") #'my/ai-review-local-send-to-agent)
     (define-key map (kbd "S") #'my/ai-review-save)
-    (define-key map (kbd "g") #'my/ai-pr-review)
+    (define-key map (kbd "g") #'my/ai-review)
     (define-key map (kbd "h") #'my/ai-pr-review-github)
     (define-key map (kbd "L") #'my/ai-pr-review-gitlab)
-    (define-key map (kbd "G") #'my/ai-pr-review-send-to-agent)
+    (define-key map (kbd "G") #'my/ai-review-send-or-load)
     (define-key map (kbd "l") #'my/ai-log-show)
     (define-key map (kbd "P") #'my/ai-start-with-profile)
     (define-key map (kbd "M") #'my/ai-memory-capture)
@@ -592,9 +699,13 @@
 
 (with-eval-after-load 'embark
   (add-to-list 'embark-general-alt-commands
-               '(my/ai-review-local . "AI review local diff"))
+               '(my/ai-review-local . "AI review: local diff"))
   (add-to-list 'embark-general-alt-commands
-               '(my/ai-pr-review . "AI review PR/MR (gh/glab)")))
+               '(my/ai-review-local-send-to-agent . "AI review: local diff → agent"))
+  (add-to-list 'embark-general-alt-commands
+               '(my/ai-review . "AI review: local / PR / MR"))
+  (add-to-list 'embark-general-alt-commands
+               '(my/ai-pr-review . "AI review: PR/MR only (gh/glab)")))
 
 (when (fboundp 'my/markdown-setup-keys)
   (my/markdown-setup-keys))
