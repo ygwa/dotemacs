@@ -19,11 +19,10 @@
    (setq dired-use-ls-dired t)))
 
 ;; ============================================
-;; 视觉微调 (TUI 专属, 2026-06 起)
+;; 视觉微调
 ;; ============================================
-;; 统一 TUI 配置, 不再有 GUI 分支.
 
-;; 光标: TUI 用 box (Emacs 默认), daemon 启动时不执行避免 headless 报错
+;; 光标: daemon 启动时不执行避免 headless 报错
 (unless (daemonp)
   (setq-default cursor-type 'box))
 

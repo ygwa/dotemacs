@@ -59,12 +59,16 @@
 ;; ============================================
 
 ;; 按照逻辑顺序加载
-;; 注意: 2026-06 起本配置统一为 TUI-only (emacsclient + daemon),
-;; 早期 config-gui.el 已被删除, 不再加载.
+;; TUI-first + GUI profile: my/display 检测后加载 config-display-tui 或 config-gui.
 (require 'my-custom)
+(require 'my-display)
 (mapc #'require '(config-default
 		  config-org
-                  config-shared
+                  config-shared))
+(if (my/gui-session-p)
+    (mapc #'require '(config-gui config-preview-gui))
+  (require 'config-display-tui))
+(mapc #'require '(config-dashboard
                   config-treesit
 		  config-web
                   config-package

@@ -11,8 +11,7 @@
   (setq treemacs-width 30
         treemacs-is-never-other-window t
         treemacs-show-hidden-files t
-        ;; TUI-only (2026-06): 永远不用 PNG 图标
-        treemacs-no-png-images t
+        ;; treemacs-no-png-images 由 config-display-tui / config-gui profile 预设
         treemacs-sorting 'alphabetic-asc
         treemacs-follow-after-init t
         treemacs-collapse-dirs 3
