@@ -101,16 +101,15 @@
     (when-let ((root (my/project-root)))
       (file-name-nondirectory (directory-file-name (expand-file-name root))))))
 
-(when (memq 'tab-bar my/features)
-  (use-package tab-bar
-    :ensure nil
-    :hook (after-init . tab-bar-mode)
-    :custom
-    (tab-bar-show-new-button nil)
-    (tab-bar-tab-group-function #'my/tab-bar-tab-group)
-    (tab-bar-format '((side (right-side))
-                       (cache side-group)
-                       (format (("  " tab) " "))))))
+(use-package tab-bar
+  :ensure nil
+  :hook (after-init . tab-bar-mode)
+  :custom
+  (tab-bar-show-new-button nil)
+  (tab-bar-tab-group-function #'my/tab-bar-tab-group)
+  (tab-bar-format '((side (right-side))
+                     (cache side-group)
+                     (format (("  " tab) " ")))))
 
 (my/project-layouts--load)
 

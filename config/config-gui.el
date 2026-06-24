@@ -127,5 +127,12 @@ M-x customize-group my-config 改。"
   :config
   (treemacs-load-theme "nerd-icons"))
 
+;; ============================================
+;; 8. 浏览器预览默认 — 系统默认 handler (formerly config-preview-gui.el)
+;; ============================================
+;; DWIM 命令定义在 my-display.el; 这里只设置 browse-url 走系统默认.
+
+(setq browse-url-browser-function #'browse-url-default-browser)
+
 (provide 'config-gui)
 ;;; config-gui.el ends here
