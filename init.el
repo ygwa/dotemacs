@@ -63,6 +63,7 @@
 (require 'my-custom)
 (require 'my-project)
 (require 'my-display)
+(require 'my-sidebar)
 (mapc #'require '(config-default
 		  config-org
                   config-shared))
