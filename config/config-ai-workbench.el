@@ -129,6 +129,8 @@
 (defun my/ai-tool--run-shell (command)
   (unless command
     (setq command (read-shell-command "Run in project: ")))
+  (unless (y-or-n-p (format "Run in project root? %s" command))
+    (user-error "Cancelled"))
   (my/ai-with-project-default-directory
    (lambda ()
      (shell-command-to-string command))))
