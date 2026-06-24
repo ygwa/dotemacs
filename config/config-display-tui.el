@@ -73,13 +73,12 @@
   (my/display--setup-tui-faces))
 
 ;; ============================================
-;; 4. Dashboard / Treemacs — 纯文本
+;; 4. Dashboard — 纯文本 (sidebar 已用 dired, 无 PNG 需求)
 ;; ============================================
 
 (setq dashboard-display-icons-p nil
       dashboard-set-heading-icons nil
-      dashboard-set-file-icons nil
-      treemacs-no-png-images t)
+      dashboard-set-file-icons nil)
 
 (provide 'config-display-tui)
 ;;; config-display-tui.el ends here

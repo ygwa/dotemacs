@@ -138,8 +138,8 @@
      (magit-status-mode :select t :align right :size 0.5)
      ;; Embark 收集器: 右侧
      (embark-collect-mode :select t :align right :size 0.4)
-     ;; Treemacs 文件树: 左侧
-     (treemacs-mode :select t :align left :size 30)
+     ;; Sidebar (*sidebar:*) 由 my-sidebar.el 自己用 display-buffer-in-side-window,
+     ;; 不需要 shackle 规则. 见 lisp/my-sidebar.el.
      ;; AI workbench buffers
      ("\\*AI-Plan\\*" :select t :align right :size 0.35)
      ("\\*AI-Review\\*" :select t :align right :size 0.45)

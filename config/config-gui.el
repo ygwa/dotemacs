@@ -113,19 +113,12 @@ M-x customize-group my-config 改。"
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 ;; ============================================
-;; 7. Dashboard / Treemacs — 图标
+;; 7. Dashboard — 图标 (sidebar 已用 dired, 不再需要 treemacs)
 ;; ============================================
 
 (setq dashboard-display-icons-p t
       dashboard-set-heading-icons t
-      dashboard-set-file-icons t
-      treemacs-no-png-images nil)
-
-(use-package treemacs-nerd-icons
-  :ensure t
-  :after treemacs
-  :config
-  (treemacs-load-theme "nerd-icons"))
+      dashboard-set-file-icons t)
 
 ;; ============================================
 ;; 8. 浏览器预览默认 — 系统默认 handler (formerly config-preview-gui.el)
