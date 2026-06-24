@@ -16,7 +16,9 @@
 ;;
 ;; Markdown 渲染: agent 输出在 comint buffer 里被 markdown-overlays 渲染,
 ;;                不需要额外工具. 手写 .md 用 M-x markdown-view-mode.
-;; Transcript: 对话记录自动保存到项目根目录 .agent-shell/transcripts/
+;; Transcript: 对话记录自动保存到项目 `.agent/transcripts/`
+
+(require 'my-project)
 
 ;; ============================================
 ;; 0. Agent 审阅桥 (Phase 1 / 2 — 无 preset prompt)
@@ -119,16 +121,17 @@
   ;; ============================================
   (setq agent-shell-cwd-function
         (lambda ()
-          "跟随 VCS 项目根 (git/svn/hg 等), 找不到就用 buffer 的 default-directory."
-          (or (vc-root-dir) default-directory)))
+          "Follow project root; fall back to buffer `default-directory'."
+          (or (my/project-root) default-directory)))
 
   ;; ============================================
   ;; Transcript 配置: 自动保存对话记录到项目目录
   ;; ============================================
   (setq agent-shell-transcript-file-path-function
         (lambda ()
-          (let* ((root (or (vc-root-dir) default-directory))
-                 (dir (expand-file-name ".agent-shell/transcripts" root)))
+          (let* ((root (or (my/project-root) default-directory))
+                 (dir (expand-file-name "transcripts"
+                                        (expand-file-name ".agent" root))))
             (unless (file-directory-p dir) (make-directory dir t))
             (expand-file-name
              (format-time-string "%F-%H-%M-%S.md") dir))))

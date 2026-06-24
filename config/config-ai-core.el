@@ -1,7 +1,8 @@
 ;;; config-ai-core.el --- AI workbench shared utilities  -*- lexical-binding: t; -*-
 
+(require 'my-project)
+
 ;; Agent OS 层基础设施: 项目 .agent/ 目录、专用 buffer、日志.
-;; 不含 AI Context Engineering UI (按用户要求跳过).
 
 (defgroup my-ai nil
   "AI workbench (Agent OS layer)."
@@ -20,25 +21,13 @@
 (defvar my/ai--post-capture-hook nil
   "One-shot hook run after `org-capture' finalizes (used by `my/ai-new-task').")
 
-(defun my/ai-project-root ()
-  "Return expanded project root, or nil."
-  (condition-case nil
-      (or (and (fboundp 'project-current)
-               (let ((proj (project-current)))
-                 (when proj (expand-file-name (project-root proj)))))
-          (vc-root-dir)
-          (when (buffer-file-name)
-            (locate-dominating-file (buffer-file-name ".git")))
-          default-directory)
-    (error nil)))
-
 (defun my/ai-agent-dir (&optional root)
   "Return `.agent/' directory for ROOT or current project."
-  (expand-file-name ".agent" (or root (my/ai-project-root) default-directory)))
+  (expand-file-name ".agent" (or root (my/project-root) default-directory)))
 
 (defun my/ai-ensure-agent-dir (&optional root)
   "Create `.agent/' and standard subdirs; return directory path."
-  (let* ((root (or root (my/ai-project-root) default-directory))
+  (let* ((root (or root (my/project-root) default-directory))
          (dir (my/ai-agent-dir root)))
     (unless (file-directory-p dir)
       (make-directory dir t))
@@ -116,7 +105,7 @@
 
 (defun my/ai-with-project-default-directory (fn)
   "Run FN with `default-directory' at project root."
-  (let ((root (my/ai-project-root)))
+  (let ((root (my/project-root)))
     (unless root
       (user-error "Not in a project"))
     (let ((default-directory root))

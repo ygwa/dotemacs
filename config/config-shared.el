@@ -34,26 +34,50 @@
 ;; ============================================
 
 (use-package catppuccin-theme
-  :ensure t)
+  :ensure t
+  :custom
+  ;; TUI 下不用透明/淡化, 保持实底与可读对比
+  (catppuccin-transparent-backgrounds nil))
 
-(defvar my/theme-flavor 'mocha
-  "当前 catppuccin flavor.
-切换后需 `catppuccin-reload' 重新生成主题.")
+(defun my/graphic-frame-p (&optional frame)
+  "Non-nil when FRAME (or selected frame) is on a graphical display."
+  (display-graphic-p (or frame (selected-frame))))
 
-(defun my/load-theme ()
-  "加载并启用 `catppuccin' 主题, 应用 `my/theme-flavor'.
-daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
-否则 frame 未创建时 load-theme 会用错 frame 参数."
-  (when (and (require 'catppuccin-theme nil 'noerror)
-             (locate-library "catppuccin-theme"))
-    (setq catppuccin-flavor my/theme-flavor)
-    (catppuccin-reload)              ; 触发 face 重新生成, 应用新 flavor
+(defun my/effective-theme-flavor (&optional frame)
+  "Catppuccin flavor for FRAME: GUI vs TUI."
+  (if (my/graphic-frame-p frame)
+      my/theme-flavor
+    my/tui-theme-flavor))
+
+(defun my/load-theme (&optional frame)
+  "Load theme for FRAME (GUI: catppuccin / GUI flavor; TUI: optional modus or catppuccin)."
+  (cond
+   ((and (not (my/graphic-frame-p frame)) my/tui-theme)
     (mapc #'disable-theme custom-enabled-themes)
-    (load-theme 'catppuccin t)))
+    (load-theme my/tui-theme t)
+    (run-hooks 'my/tui-after-theme-hook))
+   ((and (require 'catppuccin-theme nil 'noerror)
+         (locate-library "catppuccin-theme"))
+    (setq catppuccin-flavor (my/effective-theme-flavor frame))
+    (catppuccin-reload)
+    (mapc #'disable-theme custom-enabled-themes)
+    (load-theme 'catppuccin t)
+    (unless (my/graphic-frame-p frame)
+      (run-hooks 'my/tui-after-theme-hook)))))
 
-;; daemon 永远走 hook 路径; 前台启动直接调一次
+(defgroup my-display nil
+  "TUI display tweaks."
+  :group 'my-config)
+
+(defcustom my/tui-after-theme-hook nil
+  "Run after TUI theme load (contrast faces, dashboard, etc.)."
+  :type 'hook
+  :group 'my-display)
+
+;; daemon 按首 frame 类型选主题; hook 传入 frame
 (if (daemonp)
-    (add-hook 'server-after-make-frame-hook #'my/load-theme)
+    (add-hook 'server-after-make-frame-hook
+              (lambda (frame) (my/load-theme frame)))
   (my/load-theme))
 
 ;; ============================================

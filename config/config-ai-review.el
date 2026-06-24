@@ -27,7 +27,7 @@
   "Collect local git diff into *AI-Review* (no preset prompt)."
   (interactive)
   (my/ai-bootstrap-project)
-  (let* ((root (my/ai-project-root))
+  (let* ((root (my/project-root))
          (diff (my/ai-review--local-diff-text))
          (content (format "# Local review\n\nProject: `%s`\n\n```diff\n%s\n```"
                           (file-name-nondirectory (directory-file-name root))

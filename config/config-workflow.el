@@ -58,17 +58,10 @@
   (with-temp-file my/project-layouts-file
     (insert (format "(setq my/project-layouts %S)\n" my/project-layouts))))
 
-(defun my/project-root-directory ()
-  "Return expanded project root for current buffer, or nil."
-  (when-let ((proj (project-current)))
-    (expand-file-name (project-root proj))))
-
 (defun my/project-save-layout ()
   "Save window layout for the current project."
   (interactive)
-  (let ((root (or (my/project-root-directory) (vc-root-dir))))
-    (unless root
-      (user-error "Not in a project"))
+  (let ((root (my/project-root-or-error)))
     (puthash (expand-file-name root)
              (list (current-window-configuration))
              my/project-layouts)
@@ -79,9 +72,7 @@
 (defun my/project-restore-layout ()
   "Restore saved window layout for the current project."
   (interactive)
-  (let ((root (or (my/project-root-directory) (vc-root-dir))))
-    (unless root
-      (user-error "Not in a project"))
+  (let ((root (my/project-root-or-error)))
     (if-let ((entry (gethash (expand-file-name root) my/project-layouts)))
         (progn
           (set-window-configuration (car entry))
@@ -94,7 +85,7 @@
   (interactive)
   (require 'project)
   (call-interactively #'project-switch-project)
-  (let ((root (my/project-root-directory)))
+  (let ((root (my/project-root)))
     (when root
       (if (gethash (expand-file-name root) my/project-layouts)
           (my/project-restore-layout)
@@ -107,21 +98,19 @@
 (defun my/tab-bar-tab-group (window)
   "Group tab-bar tabs by VCS project root."
   (with-current-buffer (window-buffer window)
-    (when-let ((root (ignore-errors
-                       (or (vc-root-dir)
-                           (when (buffer-file-name)
-                             (locate-dominating-file (buffer-file-name) ".git"))))))
+    (when-let ((root (my/project-root)))
       (file-name-nondirectory (directory-file-name (expand-file-name root))))))
 
-(use-package tab-bar
-  :ensure nil
-  :hook (after-init . tab-bar-mode)
-  :custom
-  (tab-bar-show-new-button nil)
-  (tab-bar-tab-group-function #'my/tab-bar-tab-group)
-  (tab-bar-format '((side (right-side))
-                    (cache side-group)
-                    (format (("  " tab) " ")))))
+(when (memq 'tab-bar my/features)
+  (use-package tab-bar
+    :ensure nil
+    :hook (after-init . tab-bar-mode)
+    :custom
+    (tab-bar-show-new-button nil)
+    (tab-bar-tab-group-function #'my/tab-bar-tab-group)
+    (tab-bar-format '((side (right-side))
+                       (cache side-group)
+                       (format (("  " tab) " "))))))
 
 (my/project-layouts--load)
 

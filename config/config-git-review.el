@@ -43,16 +43,7 @@
 ;;   然后在 magit-status 里 M-x forge-add-repository
 ;;
 ;; Magit 内入口: ' (forge-dispatch) 或 N (forge menu)
-
-(defcustom my/forge-extra-gitlab-instances nil
-  "自托管 GitLab 实例, 每项 (GITHOST APIHOST WEBHOST CLASS).
-示例:
-  ((\"gitlab.example.com\"
-    \"gitlab.example.com/api/v4\"
-    \"gitlab.example.com\"
-    forge-gitlab-repository))"
-  :type '(repeat (list string string string symbol))
-  :group 'my-config)
+;; 自托管 GitLab: `my/forge-extra-gitlab-instances` (M-x customize-group my-config)
 
 (use-package forge
   :ensure t
