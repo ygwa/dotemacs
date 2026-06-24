@@ -1,6 +1,5 @@
-;;; config-shared.el --- TUI-only cross-platform UI -*- lexical-binding: t; -*-
-;; 2026-06 起: 统一 TUI 配置 (emacsclient + daemon),
-;; 不再有 (display-graphic-p) 双分支. 所有视觉配置按 24-bit color TUI 终端优化.
+;;; config-shared.el --- Cross-platform shared UI -*- lexical-binding: t; -*-
+;; TUI / GUI 视觉差异由 config-display-tui.el 或 config-gui.el 按 profile 加载.
 
 ;; ============================================
 ;; 1. 基础 UI 行为
@@ -31,11 +30,8 @@
 (add-hook 'Info-mode-hook #'visual-line-mode)
 
 ;; ============================================
-;; 3. 主题 (catppuccin mocha)
+;; 3. 主题 (catppuccin)
 ;; ============================================
-;; TUI 24-bit color 终端完美支持 catppuccin mocha.
-;; `catppuccin-flavor' 切换其它 flavor 后需 `catppuccin-reload' 重生成 face.
-;; 旧版 Mac 暗色模式同步 hook 已删除 (config-gui.el 整体下线).
 
 (use-package catppuccin-theme
   :ensure t)
@@ -61,32 +57,19 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
   (my/load-theme))
 
 ;; ============================================
-;; 4. Mode-line (doom-modeline) — TUI 字符级配置
+;; 4. Mode-line (doom-modeline) — 公共配置
 ;; ============================================
-;; TUI 终端不渲染像素图标, 关掉所有 icon/unicode 渲染避免方框/断行.
-;; 字符级 fallback 仍然清晰可读.
+;; 图标开关由 config-display-tui / config-gui profile 分别设置.
 
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1)
   :custom
-  ;; 高度 (像素). TUI 统一 20 像素 (字符模式两行高)
   (doom-modeline-height 20)
   (doom-modeline-bar-width 4)
-  ;; TUI: 全部关掉像素/unicode 图标
-  (doom-modeline-icon nil)
-  (doom-modeline-unicode nil)
-  (doom-modeline-major-mode-icon nil)
-  (doom-modeline-major-mode-color-icon nil)
-  (doom-modeline-buffer-state-icon nil)
-  (doom-modeline-buffer-modification-icon nil)
-  (doom-modeline-lsp-icon nil)
-  (doom-modeline-time-icon nil)
-  (doom-modeline-modal-icon nil)
   (doom-modeline-time t)
   (doom-modeline-env t)
   (doom-modeline-buffer-encoding nil)
-  ;; VCS 集成 (仅在项目下显示 branch)
   (doom-modeline-vcs-max-length 30)
   (doom-modeline-project-detection 'auto))
 
@@ -149,97 +132,11 @@ daemon 下用 server-after-make-frame-hook 等首 frame 落地后再加载,
 (global-set-key (kbd "S-M-<up>")    #'windmove-swap-states-up)
 (global-set-key (kbd "S-M-<down>")  #'windmove-swap-states-down)
 
-;; ============================================
-;; 6. nerd-icons — TUI 下不安装主包, 仅用 dired unicode fallback
-;; ============================================
-;; TUI 不渲染 Nerd Font 像素图标, 主包 (nerd-icons.el) 安装但不激活也无意义.
-;; nerd-icons-dired / nerd-icons-corfu 内部自带 unicode 字符级 fallback,
-;; 不依赖主包即可在 TUI 下显示文字符号 (例如 dired 中显示 [DIR]).
-
-(use-package nerd-icons-dired
-  :ensure t
-  :hook (dired-mode . nerd-icons-dired-mode))
-
-(use-package nerd-icons-corfu
-  :ensure t
-  :after corfu
-  :config
-  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+;; Dashboard → config/config-dashboard.el
+;; nerd-icons / dashboard icons → config-display-tui.el 或 config-gui.el
 
 ;; ============================================
-;; 7. 启动仪表盘 (Dashboard) — TUI 字符级
-;; ============================================
-;; 不用 Nerd Font 图标, banner 走 ascii (figlet 在窄终端会断行).
-
-(use-package dashboard
-  :ensure t
-  :init
-  ;; 抑制 dashboard.el 包自带的 dashboard-setup-startup-hook (L591-598),
-  ;; 那个 hook 会 (add-hook 'emacs-startup-hook #'dashboard-initialize).
-  ;; 在直接 `emacs' (非 daemon) 启动时, emacs-startup-hook 跑时只有一个
-  ;; window, dashboard-initialize 调 (switch-to-buffer) 后 display-buffer
-  ;; 行为触发 split-window-sensibly 强制 vertical split, 结果 frame 出现
-  ;; 2 个 window (dashboard + scratch). daemon 模式下问题不同 (我们单独用
-  ;; server-after-make-frame-hook 接管).
-  ;;
-  ;; 解决: 在 dashboard 包加载 autoload 前, 用 defalias 把
-  ;; dashboard-setup-startup-hook 替换成 noop. dashboard autoload
-  ;; 触发的就是 (require 'dashboard), 加载后我们用 fset 覆盖原函数.
-  ;; 这里 fset 不会失效因为我们只用自己的渲染逻辑.
-  (fset 'dashboard-setup-startup-hook (lambda () "noop"))
-  :custom
-  (dashboard-banner-logo-title "AI 工作台")
-  (dashboard-center-content t)
-  ;; TUI: 关掉 nerd-icons, 列表走纯文本
-  (dashboard-display-icons-p nil)
-  ;; dashboard-items 是 alist: '(item-type . count), 顺序即渲染顺序.
-  (dashboard-items '((recents  . 5)
-                     (projects . 5)
-                     (agenda   . 5)))
-  (dashboard-projects-backend 'project-el)
-  (dashboard-week-agenda-trim-leading-zero t)
-  (dashboard-startupify-list '(dashboard-insert-banner
-                               dashboard-insert-newline
-                               dashboard-insert-banner-title
-                               dashboard-insert-newline
-                               dashboard-insert-init-info
-                               dashboard-insert-items
-                               dashboard-insert-newline))
-  :config
-  ;; TUI: 走 'ascii' banner (避免 figlet 断行)
-  (setq dashboard-startup-banner 'ascii)
-  (setq dashboard-init-info
-        (lambda ()
-          (propertize
-           (format "✦  %d packages  ·  loaded in %s"
-                   (length package-activated-list)
-                   (emacs-init-time))
-           'face 'font-lock-comment-face)))
-  ;; 替代 dashboard-setup-startup-hook: daemon 下 emacs-startup-hook 在首 frame
-  ;; 前已跑完; 改挂 server-after-make-frame-hook, 每个 emacsclient 连接时重绘.
-  (when (< (length command-line-args) 2)
-    (add-hook 'window-size-change-functions #'dashboard-resize-on-hook 100)
-    (add-hook 'server-after-make-frame-hook
-              (lambda ()
-                (when (buffer-live-p (get-buffer dashboard-buffer-name))
-                  (with-selected-frame (selected-frame)
-                    (dashboard-insert-startupify-lists)
-                    (switch-to-buffer dashboard-buffer-name)
-                    (delete-other-windows)))))
-    (add-hook 'after-init-hook #'dashboard-insert-startupify-lists)))
-
-;; initial-buffer-choice 必须在 use-package dashboard 块**外**直接 setq.
-;; 之前在 :custom 里写 (initial-buffer-choice (lambda ...)) 实际被
-;; use-package 展开成 (custom-theme-set-variables ...) 设到 use-package
-;; 的 synthetic theme 里, 立即 remq theme, 变量值在 theme-local 表,
-;; **不修改 global initial-buffer-choice** — 它仍是默认 nil,
-;; emacsclient 因此 fallback 到 *scratch*. 单独 setq 写 global 变量,
-;; 立即生效.
-(setq initial-buffer-choice
-      (lambda () (get-buffer-create dashboard-buffer-name)))
-
-;; ============================================
-;; 8. 其它细节
+;; 6. 其它细节
 ;; ============================================
 
 ;; auto-save 启用 (写到 var/auto-save-list/, 防 Emacs crash / 断电丢失未保存内容)
