@@ -63,18 +63,18 @@ M-x treesit-install-language-grammar RET rust RET
 
 ## Eglot 键位（编程 buffer 内）
 
-前缀 `C-c s`（= **s**erver）：
+前缀 `C-c l`（= **l**anguage server）。符号搜索走 `C-c s e`。
 
 | 键位 | 命令 | 说明 |
 |---|---|---|
-| `C-c s r` | `eglot-rename` | 重命名 |
-| `C-c s f` | `eglot-format` | 格式化 |
-| `C-c s a` | `eglot-code-actions` | Quick Fix（小灯泡） |
-| `C-c s h` | `eglot-help-at-point` | 光标处文档 |
-| `C-c s d` | `eglot-find-declaration` | 跳声明 |
-| `C-c s i` | `eglot-find-implementation` | 跳实现（trait impl） |
-| `C-c s t` | `eglot-find-typeDefinition` | 跳类型定义 |
-| `C-c e s` | `consult-eglot-symbols` | 按符号搜项目 |
+| `C-c l r` | `eglot-rename` | 重命名 |
+| `C-c l f` | `eglot-format` | 格式化 |
+| `C-c l a` | `eglot-code-actions` | Quick Fix（小灯泡） |
+| `C-c l h` | `eglot-help-at-point` | 光标处文档 |
+| `C-c l d` | `eglot-find-declaration` | 跳声明 |
+| `C-c l i` | `eglot-find-implementation` | 跳实现（trait impl） |
+| `C-c l t` | `eglot-find-typeDefinition` | 跳类型定义 |
+| `C-c s e` | `consult-eglot-symbols` | 按符号搜项目 |
 
 ## Rust 专属格式
 
@@ -110,18 +110,18 @@ fn main() { let d = Dog; d.speak(); }
 
 1. 光标在 `d.speak()` 的 `speak` 上
 2. `M-.` → `trait Animal` 的 `fn speak`
-3. `C-c s i` → `impl Animal for Dog` 的 `fn speak` 实现
+3. `C-c l i` → `impl Animal for Dog` 的 `fn speak` 实现
 
 ### 场景 3：文档
 
 1. 光标在 `println!` 上
 2. `C-h .` → 底部 eldoc 显示
-3. `C-c s h` → eglot 完整 hover 文档
+3. `C-c l h` → eglot 完整 hover 文档
 
 ### 场景 4：Quick Fix
 
 1. 编译错误 / 未导入的 crate，光标在错误位
-2. `C-c s a` → 选修复（加 `use` / 处理 `unwrap` 等）
+2. `C-c l a` → 选修复（加 `use` / 处理 `unwrap` 等）
 
 ### 场景 5：找所有引用
 
@@ -132,7 +132,7 @@ fn main() { let d = Dog; d.speak(); }
 ### 场景 6：重命名
 
 1. 光标在要重命名的符号
-2. `C-c s r` → 输入新名 → 所有引用自动更新
+2. `C-c l r` → 输入新名 → 所有引用自动更新
 
 ## 编译运行
 
@@ -161,10 +161,10 @@ cargo test
 
 | 键位 | 命令 |
 |---|---|
-| `C-c p f` | `project-find-file` |
+| `C-c s f` | `project-find-file` |
+| `C-c s p` | `project-find-regexp` |
 | `C-c p b` | `project-switch-to-buffer` |
 | `C-c p s` | `eat-project` |
-| `C-c p g` | `project-find-regexp` |
 
 ## 常见问题
 

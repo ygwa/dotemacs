@@ -1,10 +1,11 @@
 # Emacs 配置
 
-为 Emacs 30.2 优化的个人配置。**TUI 优先（emacsclient + daemon）**，所有外部二进制依赖已用 `executable-find` 守护。
+为 Emacs 30.2 优化的个人配置。**TUI 优先（emacsclient + daemon）**，GUI 独立实例按需启用；所有外部二进制依赖已用 `executable-find` 守护。
 
-> **架构原则（2026-06）**：本配置统一为 TUI-only，不再包含 GUI 分支。
-> 早期 `config-gui.el`（字体 / Mac 暗色 / 像素滚动 / 全屏快捷键）已整体下线。
-> 所有视觉配置按 24-bit color TUI 终端优化（catppuccin mocha 主题、字符级 modeline / dashboard / nerd-icons fallback）。
+> **架构原则（2026-06）**：**TUI-first + GUI profile** 双模式。
+> - **TUI**：`emacs --daemon` + `emacsclient -t`，字符级 modeline / dashboard / nerd-icons fallback
+> - **GUI**：前台 `emacs` 或 `MY_EMACS_GUI=1 emacs --daemon=emacs-gui`，JetBrains Mono + CJK、Nerd Font 图标、浏览器预览
+> - 显示差异集中在 `config-display-tui.el` / `config-gui.el`，核心模块（LSP / Magit / AI）共用
 
 ## 🎯 启动后第一眼
 
@@ -21,8 +22,11 @@ Recent Files: (r)
     ~/.emacs.d/init.el
     ...
 
-Projects: (p)
-    ~/.emacs.d/
+Projects: (p)   🔥 = 当前项目
+    ~/.emacs.d/  🔥
+
+Git: (g)
+    ● dirty-repo-name
 
 Agenda for the coming week: (a)
       Task:        2025-01-25 TODO 每周回顾 (Weekly Review)
@@ -38,7 +42,11 @@ Agenda for the coming week: (a)
 ├── config/
 │   ├── config-default.el  # 基础设置（编码/dired/cursor）
 │   ├── config-org.el      # Org 模式 + Inbox capture
-│   ├── config-shared.el   # TUI UI（catppuccin/doom-modeline/dashboard/window）
+│   ├── config-shared.el   # 公共 UI（catppuccin/doom-modeline/window）
+│   ├── config-display-tui.el # TUI profile（字符级图标 fallback）
+│   ├── config-gui.el      # GUI profile（字体/图标/平滑滚动）
+│   ├── config-preview-gui.el # GUI 浏览器预览默认
+│   ├── config-dashboard.el # 启动页：Git dirty + Projects 🔥
 │   ├── config-treesit.el  # Tree-sitter 语法库源、mode remap、一键安装
 │   ├── config-package.el  # 包管理 + 编程工具（vertico/corfu/consult/eglot）
 │   ├── config-markdown.el # Markdown 编辑与预览
@@ -69,9 +77,26 @@ git clone <repo> ~/.emacs.d
 `init.el` → `early-init.el` 先跑（GC/frame/native-comp）→ 主入口 `require` 顺序：
 
 ```
-config-default  →  config-org  →  config-shared  →  config-treesit
-                →  config-web  →  config-package →  config-markdown
-                →  config-agent →  config-ai-* →  config-git-review →  config-workflow
+config-default  →  config-org  →  config-shared
+              →  config-display-tui（TUI）或 config-gui + config-preview-gui（GUI）
+              →  config-dashboard  →  config-treesit
+              →  config-web  →  config-package →  config-markdown
+              →  config-agent →  config-ai-* →  config-git-review →  config-workflow
+```
+
+**启动方式：**
+
+```bash
+# TUI（推荐日常）
+emacs --daemon
+emacsclient -t
+
+# GUI 前台
+emacs
+
+# GUI daemon（可选）
+MY_EMACS_GUI=1 emacs --daemon=emacs-gui
+emacsclient -c -s emacs-gui
 ```
 
 ## ⌨️ 快捷键
@@ -84,17 +109,25 @@ config-default  →  config-org  →  config-shared  →  config-treesit
 |---|---|---|
 | `C-s` | `consult-line` | 当前 buffer 增量搜索 |
 | `C-M-s` | `consult-line-multi` | 多 buffer 搜索 |
-| `C-x b` | `consult-buffer` | 切换 buffer |
 | `M-y` | `consult-yank-pop` | 剪贴板历史 |
-| `C-c C-r` | `consult-recent-file` | 最近文件 |
-| `C-c g` | `consult-git-grep` | 项目内 git grep |
-| `C-c k` | `consult-ripgrep` | 项目内 ripgrep |
-| `C-x l` | `consult-locate` | locate 数据库搜索 |
-| `C-x r b` | `consult-bookmark` | 书签 |
 | `C-c j / J / w` | `avy-goto-char/line/word-1` | 屏幕内快速跳转 |
 | `C-.` | `embark-act` | 对当前目标执行上下文操作 |
 | `C-;` | `embark-dwim` | 智能默认动作 |
 | `C-h B` | `embark-bindings` | 查看键绑定 |
+
+**查找统一前缀 `C-c s`（search）：**
+
+| 键 | 命令 | 说明 |
+|---|---|---|
+| `C-c s b` | `consult-buffer` | 切换 buffer |
+| `C-c s f` | `project-find-file` | 项目内找文件 |
+| `C-c s g` | `consult-git-grep` | 项目内 git grep |
+| `C-c s k` | `consult-ripgrep` | 项目内 ripgrep |
+| `C-c s r` | `consult-recent-file` | 最近文件 |
+| `C-c s p` | `project-find-regexp` | 项目内 regex |
+| `C-c s e` | `consult-eglot-symbols` | LSP 符号（编程 buffer） |
+| `C-c s o` | `consult-locate` | locate 数据库 |
+| `C-c s m` | `consult-bookmark` | 书签 |
 
 ### 补全
 
@@ -105,12 +138,10 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 
 | 键 | 命令 |
 |---|---|
-| `C-c p f` | `project-find-file` |
 | `C-c p b` | `project-switch-to-buffer` |
 | `C-c p d` | `project-dired` |
 | `C-c p v` | `project-vc-dir` |
 | `C-c p s` | `eat-project` |
-| `C-c p g` | `project-find-regexp` |
 | `C-c p p` | `my/project-switch-project` | 切项目并恢复布局 / 或一键 AI 布局 |
 | `C-c p w` | `my/project-save-layout` | 保存当前项目窗口布局 |
 | `C-c p W` | `my/project-restore-layout` | 恢复已保存的项目布局 |
@@ -160,15 +191,17 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 
 ### LSP（eglot，编程 buffer 内）⭐
 
+前缀 `C-c l`（**l**anguage server；`C-c s` 留给 search）。
+
 | 键 | 命令 | 说明 |
 |---|---|---|
-| `C-c s r` | 重命名 | |
-| `C-c s f` | `eglot-format` | LSP 格式化（所有 eglot buffer）|
-| `C-c s a` | 代码操作 | |
-| `C-c s h` | 帮助 | |
-| `C-c s d` | 跳声明 | |
-| `C-c s i` | 跳实现 | |
-| `C-c s t` | 跳类型定义 | |
+| `C-c l r` | 重命名 | |
+| `C-c l f` | `eglot-format` | LSP 格式化（所有 eglot buffer）|
+| `C-c l a` | 代码操作 | |
+| `C-c l h` | 帮助 | |
+| `C-c l d` | 跳声明 | |
+| `C-c l i` | 跳实现 | |
+| `C-c l t` | 跳类型定义 | |
 
 ### 文件格式化（mode 内）
 
@@ -208,7 +241,7 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 **Forge（GitHub / GitLab）** 需 `~/.authinfo` 配置 token，见 [Forge 指南](./docs/forge-guide.md)。无 token 时 Magit 仍可用，Forge 功能不可用。
 
 **可选工具**（README 之前提过但配置里不依赖）：
-- `ripgrep` — `C-c k` 走 `consult-ripgrep` 速度比 git grep 快 10x
+- `ripgrep` — `C-c s k` 走 `consult-ripgrep` 速度比 git grep 快 10x
 - `plantuml` / `graphviz (dot)` — Org Babel 代码块出图
 
 **没装某个外部二进制不会让启动失败**，只是对应功能降级。
@@ -269,12 +302,26 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 - [Forge GitHub/GitLab 指南](./docs/forge-guide.md)
 - [AI Workbench 指南](./docs/ai-workbench.md)
 
-## 🔧 TUI 行为
+## 🔧 显示与启动
 
-- **启动方式**：emacsclient + daemon（`emacs --daemon` 启动后台服务，`emacsclient -t` 连 TUI frame）
+### TUI profile
+
+- **启动**：`emacs --daemon` + `emacsclient -t`
 - **24-bit color 终端**：catppuccin mocha 主题直接渲染
-- **TUI 字符级 fallback**：nerd-icons-dired / nerd-icons-corfu / dashboard 全部走 unicode 字符（不依赖 Nerd Font）
-- **daemon 适配**：`my/load-theme` 走 `server-after-make-frame-hook`，cursor-type / 字体设置跳过 daemon 启动
+- **字符级 fallback**：nerd-icons-dired / nerd-icons-corfu / dashboard 走 unicode（不依赖 Nerd Font）
+- **Markdown 预览**：`C-c C-p` → `markdown-view-mode`（内置 TUI 渲染）
+
+### GUI profile
+
+- **启动**：前台 `emacs`，或 `MY_EMACS_GUI=1 emacs --daemon=emacs-gui` + `emacsclient -c`
+- **字体**：JetBrains Mono + CJK fallback（`M-x customize-group my-config`）
+- **图标**：doom-modeline / dashboard / treemacs 启用 Nerd Font
+- **滚动**：像素平滑滚动 + 右键 context menu
+- **预览**：`C-c C-p`（Markdown → 浏览器）、`C-c C-v`（Org → HTML 浏览器）
+
+### 共用
+
+- **daemon 适配**：`my/load-theme` 走 `server-after-make-frame-hook`
 - **外部依赖**：`pandoc` / `mermaid` / `plantuml` / `dot` / `gnuplot` 用 `executable-find` 守护，未安装不报错
 
 ## 📝 许可

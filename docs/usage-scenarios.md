@@ -1,7 +1,7 @@
 # 使用场景指南
 
 > 本目录提供各开发场景的实战工作流。
-> **TUI-only 上下文**（2026-06）：配置统一在 emacsclient + daemon 模式运行，catppuccin mocha 主题，所有视觉按 24-bit color 终端优化。
+> **双模式上下文**（2026-06）：TUI 优先（`emacs --daemon` + `emacsclient -t`），GUI 独立实例按需启用（前台 `emacs` 或 `MY_EMACS_GUI=1` daemon）。视觉差异由 profile 层控制，键位与核心模块共用。
 
 ## 📚 可用指南
 
@@ -14,31 +14,45 @@
 
 ## 🧭 常用工作流
 
-### 启动与连接（daemon 模式）
+### 启动与连接
+
+**TUI（推荐日常）：**
 
 ```bash
-# 1. 启动后台 daemon (GUI / TUI client 共享 session)
 emacs --daemon
-
-# 2. 在终端里连 TUI frame
 emacsclient -t
+```
 
-# 3. 在 GUI 里连 (如需 GUI client, daemon 模式支持混合)
-emacsclient -c
+**GUI（独立实例）：**
+
+```bash
+# 前台启动
+emacs
+
+# 或 GUI daemon（与 TUI daemon 分开）
+MY_EMACS_GUI=1 emacs --daemon=emacs-gui
+emacsclient -c -s emacs-gui
 ```
 
 > daemon 启动时主题走 `server-after-make-frame-hook`，第一个 frame 创建后才加载 catppuccin 配色。
 
 ### 第一次进 editor：开 dashboard
 
-启动后默认进 `*dashboard*`（dual flow 工作台：Inbox / Studies / Principles / Code），按 `r` 进最近文件，`p` 进项目。
+启动后默认进 `*dashboard*`。区块顺序：**Git**（未提交改动的 repo）→ **Projects**（🔥 当前项目）→ Recent → Agenda。
+
+| 键 | 动作 |
+|---|---|
+| `g` | 跳到 Git 区（dirty repos） |
+| `p` | 跳到 Projects（当前项目排第一，带 🔥） |
+| `r` | 最近文件 |
+| Enter | 打开条目（Git 区 → `magit-status`） |
 
 ### 项目内工作（5 个常用键）
 
 | 键位 | 动作 |
 |---|---|
-| `C-c p f` | 搜项目内文件（fuzzy） |
-| `C-c p g` | 项目内搜 regex |
+| `C-c s f` | 搜项目内文件（fuzzy） |
+| `C-c s p` | 项目内搜 regex |
 | `C-c p s` | 开项目 Eat 终端（项目根目录） |
 | `C-c p b` | 切到项目内的 buffer |
 | `C-c p d` | 打开项目根 dired |

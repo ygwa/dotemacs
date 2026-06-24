@@ -15,7 +15,8 @@
 
 | 原则 | 说明 |
 |------|------|
-| **TUI-only** | 统一在 `emacsclient + daemon` 下运行；早期 GUI 分支（`config-gui.el`）已下线 |
+| **TUI-first + GUI profile** | TUI 用 `emacs --daemon` + `emacsclient -t`；GUI 独立实例（前台 `emacs` 或 `MY_EMACS_GUI=1` daemon） |
+| **Profile 分流** | `my/gui-session-p` 检测后加载 `config-display-tui` 或 `config-gui`；核心模块零 `(display-graphic-p)` |
 | **快速启动** | `early-init.el` 启动期 GC 最大化、延迟加载、`:defer` 按需加载 |
 | **模块化** | 按职责拆分到 `config/*.el`，`init.el` 只做入口与加载顺序 |
 | **稳定降级** | 外部二进制用 `executable-find` 检测，缺失时功能降级而非启动失败 |
@@ -39,11 +40,15 @@
 ```
 early-init.el          → GC / frame / native-comp / 禁用 splash
         ↓
-init.el                → load-path / package / exec-path-from-shell
+init.el                → load-path / package / exec-path-from-shell / my-display
         ↓
 config-default         → 编码、dired、光标
 config-org             → Org 路径、capture、agenda
-config-shared          → 主题、modeline、窗口、dashboard
+config-shared          → 主题、modeline 公共项、窗口
+config-display-tui     → TUI profile（字符级图标、dashboard 纯文本）
+  或 config-gui        → GUI profile（字体、Nerd 图标、平滑滚动）
+  + config-preview-gui → GUI 浏览器预览
+config-dashboard       → 启动页（Git dirty / Projects 🔥）
 config-treesit       → Tree-sitter 语法库与 mode remap
 config-web             → 前端 LSP、Prettier、npm 脚本
 config-package       → 补全、搜索、Magit、eglot、dape、jinx
@@ -57,8 +62,16 @@ config-workflow      → treemacs + 一键 AI 布局
 **推荐启动方式：**
 
 ```bash
-emacs --daemon          # 后台服务
-emacsclient -t          # 终端连接 TUI frame
+# TUI（日常）
+emacs --daemon
+emacsclient -t
+
+# GUI 前台
+emacs
+
+# GUI daemon（可选，TUI/GUI 分开实例）
+MY_EMACS_GUI=1 emacs --daemon=emacs-gui
+emacsclient -c -s emacs-gui
 ```
 
 **性能策略：**
@@ -72,19 +85,22 @@ emacsclient -t          # 终端连接 TUI frame
 
 ## 3. 功能模块与特性
 
-### 3.1 界面与视觉（TUI）
+### 3.1 界面与视觉（按 profile）
 
-| 特性 | 实现 |
-|------|------|
-| 主题 | **catppuccin** mocha，24-bit color 终端直接渲染 |
-| Mode line | **doom-modeline**，TUI 下关闭所有像素/unicode 图标 |
-| 启动页 | **dashboard**：最近文件、项目、本周 Agenda |
-| 行号 | `prog-mode` 相对行号；Org 关闭行号 |
-| 折行 | 文本/Org/Info 开 `visual-line-mode`；编程 buffer 保持硬换行 |
-| 图标 | **nerd-icons-dired / nerd-icons-corfu** 走 unicode 字符 fallback，不依赖 Nerd Font |
-| 拼写 | **jinx**（需 enchant2），`M-$` 纠正 |
-| 括号 | **rainbow-delimiters** + **smartparens** |
-| 撤销 | `C-z` 普通撤销；`C-x u` **vundo** 可视化撤销树 |
+| 特性 | TUI profile | GUI profile |
+|------|-------------|-------------|
+| 主题 | **catppuccin** mocha，24-bit color 终端 | 同左 |
+| Mode line | **doom-modeline**，关闭像素/unicode 图标 | Nerd Font 图标全开 |
+| 启动页 | **dashboard** 纯文本 | dashboard + nerd icons |
+| Treemacs | 无 PNG 图标 | **treemacs-nerd-icons** |
+| 字体 | 终端字体 | JetBrains Mono + CJK fallback |
+| 滚动 | 终端原生 | 像素平滑滚动 + context menu |
+| 行号 | `prog-mode` 相对行号；Org 关闭 | 同左 |
+| 折行 | 文本/Org/Info 开 `visual-line-mode` | 同左 |
+| 图标补全 | **nerd-icons-corfu** unicode fallback | Nerd Font 像素图标 |
+| 拼写 | **jinx**（需 enchant2），`M-$` 纠正 | 同左 |
+| 括号 | **rainbow-delimiters** + **smartparens** | 同左 |
+| 撤销 | `C-z` 普通撤销；`C-x u` **vundo** 可视化撤销树 | 同左 |
 
 ### 3.2 搜索、补全与导航
 
@@ -122,9 +138,9 @@ emacsclient -t          # 终端连接 TUI frame
 - `M-?` 查引用  
 - `C-M-.` 模糊搜符号  
 
-**LSP 专用前缀 `C-c s`（server）：** 重命名、格式化、代码操作、帮助、跳声明/实现/类型、整理 import（TS/TSX）
+**LSP 专用前缀 `C-c l`（language server）：** 重命名、格式化、代码操作、帮助、跳声明/实现/类型、整理 import（TS/TSX）
 
-**符号搜索：** `C-c e s` → consult-eglot-symbols
+**符号搜索：** `C-c s e` → consult-eglot-symbols
 
 ### 3.5 Tree-sitter
 
@@ -155,14 +171,15 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 - 默认笔记：`inbox.org`  
 - Capture：`C-c c` → `i` 写入 Inbox headline  
 - Agenda：`C-c a`；Dashboard 展示本周 agenda  
+- 预览：`C-c C-v` → GUI 导出 HTML 并在浏览器打开；TUI 提示用导出或 agenda  
 - 存链接：`C-c l`  
 
 ### 3.9 Markdown
 
 - **markdown-mode** + Tree-sitter 增强（Emacs 30+）  
 - 编辑期：隐藏 markup、代码块原生高亮、electric pair  
-- 查看：`M-x markdown-view-mode` / `gfm-view-mode`（TUI 只读渲染）  
-- 导出：`C-c C-e`（需 pandoc）；预览：`C-c C-p`  
+- 查看：`C-c C-p` → TUI 用 `markdown-view-mode`，GUI 用浏览器（pandoc）  
+- 导出：`C-c C-e`（需 pandoc）  
 
 ### 3.10 AI Agent 工作流
 
@@ -224,7 +241,7 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 | vtsls / typescript-language-server | TS/JS LSP |
 | tailwindcss-language-server | CSS LSP |
 | prettier | Web 格式化（apheleia） |
-| ripgrep | `C-c k` 项目搜索 |
+| ripgrep | `C-c s k` 项目搜索 |
 | python + debugpy | Python 调试 |
 | node + vscode-js-debug | Node 调试 |
 | lldb-dap | Rust 调试 |
@@ -243,17 +260,16 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 | 前缀/区域 | 模块 | 示例 |
 |-----------|------|------|
 | `C-s` / `C-M-s` | Consult 行搜索 | 当前 buffer / 多 buffer |
-| `C-x b/l/g` 等 | 内置键 remap 到 Consult/Magit | buffer / locate / magit |
-| `C-c p *` | project.el | `f` 找文件、`g` 搜 regex |
-| `C-c s *` | eglot（编程 buffer 内） | `r` 重命名、`a` 代码操作 |
-| `C-c e s` | consult-eglot | LSP 符号搜索 |
+| `C-c s *` | search（Consult + project） | `b` buffer、`f` 文件、`g/k` grep |
+| `C-c p *` | project.el | `b/d/v/s/p/w/W` 项目操作 |
+| `C-c l *` | eglot（编程 buffer 内） | `r` 重命名、`a` 代码操作 |
 | `C-c C-*` | 双 Ctrl 高优先级 | `C-a` agent、`C-s` 新 shell |
 | `C-c f *` | workflow 布局 | `l` 一键 AI 工作台 |
 | `C-c r n` | Web/Node | npm/yarn/pnpm 跑脚本 |
 | `C-c j/J/W` | avy | 屏幕内跳转 |
-| `C-c g/k` | consult | git grep / ripgrep |
 | `C-c a/c/l` | org | agenda / capture / store-link |
 | `C-x t *` | treemacs | `t` 切换、`1` 聚焦 |
+| `C-x g` | magit | Git 状态 |
 | `M-o` | ace-window | 窗口跳转与分屏 |
 | `C-` ` | my/eat-toggle | 项目终端 |
 | `C-.` / `C-;` | embark | 上下文操作 / DWIM |
@@ -266,9 +282,7 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 
 ```
 C-s          consult-line              当前 buffer 搜索
-C-x b        consult-buffer            切换 buffer
-C-c p f      project-find-file         项目内找文件
-C-c g/k      git-grep / ripgrep        项目内搜索
+C-c s b/f/g/k  search 前缀              buffer / 文件 / grep
 C-x g        magit-status              Git 状态
 M-o          ace-window                窗口跳转
 C-c c/a      org-capture / org-agenda  笔记与日程
@@ -281,7 +295,7 @@ C-`          my/eat-toggle             终端
 
 ```
 M-. / M-,    xref                      跳定义 / 跳回
-C-c s *      eglot                     LSP 操作
+C-c l *      eglot                     LSP 操作
 C-c C-f      apheleia / eglot-format   格式化
 C-n/C-p      corfu                     补全导航
 ```
@@ -298,7 +312,7 @@ C-c C-t      view agent transcript     查看 AI 对话记录
 ### 5.3 键位冲突规避策略
 
 - Org 占 `C-c a/c/l`，agent-shell 用双 Ctrl `C-c C-a/s/o/t`  
-- eglot 统一 `C-c s`（server），不与 project `C-c p` 冲突  
+- 查找统一 `C-c s`（search），eglot 迁到 `C-c l`（language server）  
 - workflow 用 `C-c f`（flow），Web 脚本用 `C-c r`（run）  
 - Magit 保留标准 `C-x g`  
 
@@ -321,8 +335,8 @@ C-c C-t      view agent transcript     查看 AI 对话记录
 
 ### 6.3 项目内开发
 
-1. `C-c p f` 找文件 → 自动 eglot + corfu  
-2. `M-.` 跳定义，`C-c s a` Quick Fix  
+1. `C-c s f` 找文件 → 自动 eglot + corfu  
+2. `M-.` 跳定义，`C-c l a` Quick Fix  
 3. `C-c C-f` 格式化 → `C-x g` Magit 提交  
 
 ### 6.4 快速捕获想法
@@ -354,4 +368,4 @@ C-c C-t      view agent transcript     查看 AI 对话记录
 
 ---
 
-*最后更新：2026-06，对应 4 轮重构后的 TUI-only 配置。*
+*最后更新：2026-06，TUI-first + GUI profile 双模式。*

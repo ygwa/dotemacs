@@ -182,7 +182,7 @@ merge / rebase 中冲突
 |---|---|
 | `M-x consult-git-grep` | 在 Git 仓库内 grep |
 | `M-x consult-git-log` | 搜 commit 历史 |
-| `C-c g` | `consult-git-grep`（全局绑定） |
+| `C-c s g` | `consult-git-grep`（`C-c s` search 前缀） |
 
 ## 常见问题
 

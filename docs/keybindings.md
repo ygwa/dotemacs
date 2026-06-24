@@ -14,13 +14,7 @@
 |---|---|---|
 | `C-s` | `consult-line` | 当前 buffer 增量搜索 |
 | `C-M-s` | `consult-line-multi` | 多 buffer 搜索 |
-| `C-x b` | `consult-buffer` | 切换 buffer |
 | `M-y` | `consult-yank-pop` | 剪贴板历史 |
-| `C-c C-r` | `consult-recent-file` | 最近文件 |
-| `C-x r b` | `consult-bookmark` | 书签 |
-| `C-x l` | `consult-locate` | locate 数据库搜索 |
-| `C-c g` | `consult-git-grep` | 项目内 git grep |
-| `C-c k` | `consult-ripgrep` | 项目内 ripgrep |
 | `C-c j` | `avy-goto-char` | 屏幕内跳到字符 |
 | `C-c J` | `avy-goto-line` | 屏幕内跳到行 |
 | `C-c W` | `avy-goto-word-1` | 屏幕内跳到单词 |
@@ -32,19 +26,32 @@
 | `<f1> l` | `consult-find-library` | 查找 elisp 库 |
 | `<f2> i` | `consult-info-lookup-symbol` | Info 查符号 |
 | `<f2> u` | `consult-unicode-char` | Unicode 字符查询 |
-| `<f6>` | `consult-buffer` | 切 buffer（与 `C-x b` 等效） |
 | `C-r` (minibuffer) | `consult-expression-history` | minibuffer 表达式历史（`read-expression-map` 内） |
+
+### 查找前缀 `C-c s`（search）
+
+> `my/search-map`，与 `config-package.el` 同步。
+
+| 键位 | 命令 | 说明 |
+|---|---|---|
+| `C-c s b` | `consult-buffer` | 切换 buffer |
+| `C-c s f` | `project-find-file` | 项目内找文件 |
+| `C-c s g` | `consult-git-grep` | 项目内 git grep |
+| `C-c s k` | `consult-ripgrep` | 项目内 ripgrep |
+| `C-c s r` | `consult-recent-file` | 最近文件 |
+| `C-c s p` | `project-find-regexp` | 项目内 regex |
+| `C-c s e` | `consult-eglot-symbols` | LSP 符号（编程 buffer） |
+| `C-c s o` | `consult-locate` | locate 数据库 |
+| `C-c s m` | `consult-bookmark` | 书签 |
 
 ## 📁 项目（project.el 内置，Emacs 30）
 
 | 键位 | 命令 | 说明 |
 |---|---|---|
-| `C-c p f` | `project-find-file` | 查找项目文件 |
 | `C-c p b` | `project-switch-to-buffer` | 切换项目 buffer |
 | `C-c p d` | `project-dired` | 打开项目根 dired |
 | `C-c p v` | `project-vc-dir` | 打开项目 VCS 目录 |
 | `C-c p s` | `eat-project` | 打开项目 Eat 终端 |
-| `C-c p g` | `project-find-regexp` | 项目内搜 regex |
 | `C-c p p` | `my/project-switch-project` | 切项目；有保存布局则恢复，否则 AI 工作台布局 |
 | `C-c p w` | `my/project-save-layout` | 保存当前项目窗口布局 |
 | `C-c p W` | `my/project-restore-layout` | 恢复当前项目已保存布局 |
@@ -105,19 +112,18 @@
 
 ## 🧠 LSP（eglot，编程 buffer 内）
 
-> `eglot-mode-map` 内绑定，前缀 `C-c s`（= **s**erver）。
+> `eglot-mode-map` 内绑定，前缀 `C-c l`（= **l**anguage server）。`C-c s` 留给 search 前缀。
 
 | 键位 | 命令 | 说明 |
 |---|---|---|
-| `C-c s r` | `eglot-rename` | 重命名符号 |
-| `C-c s f` | `eglot-format` | LSP 格式化（Web 文件格式化优先用 `C-c C-f` apheleia） |
-| `C-c s a` | `eglot-code-actions` | 代码操作（Quick Fix） |
-| `C-c s h` | `eglot-help-at-point` | 光标处文档 |
-| `C-c s d` | `eglot-find-declaration` | 跳声明 |
-| `C-c s i` | `eglot-find-implementation` | 跳实现（trait 等） |
-| `C-c s t` | `eglot-find-typeDefinition` | 跳类型定义 |
-| `C-c s o` | `eglot-code-action-organize-imports` | 整理 import（typescript-ts / tsx-ts mode 内） |
-| `C-c e s` | `consult-eglot-symbols` | 按 LSP 符号搜项目 |
+| `C-c l r` | `eglot-rename` | 重命名符号 |
+| `C-c l f` | `eglot-format` | LSP 格式化（Web 文件格式化优先用 `C-c C-f` apheleia） |
+| `C-c l a` | `eglot-code-actions` | 代码操作（Quick Fix） |
+| `C-c l h` | `eglot-help-at-point` | 光标处文档 |
+| `C-c l d` | `eglot-find-declaration` | 跳声明 |
+| `C-c l i` | `eglot-find-implementation` | 跳实现（trait 等） |
+| `C-c l t` | `eglot-find-typeDefinition` | 跳类型定义 |
+| `C-c l o` | `eglot-code-action-organize-imports` | 整理 import（typescript-ts / tsx-ts mode 内） |
 
 > 💡 **代码跳转**走原生 xref，**不绑 LSP 键**：
 > `M-.` 跳定义 / `M-,` 跳回 / `M-?` 查引用 / `C-M-.` 模糊搜符号
@@ -232,7 +238,6 @@
 | `C-c C-a` | agent-shell-toggle | agent-shell |
 | `C-c C-d` | my/magit-send-diff-to-agent / my/markdown-send-to-agent | agent |
 | `C-c C-o` | agent-shell-opencode-start-agent | agent-shell |
-| `C-c C-r` | consult-recent-file | consult |
 | `C-c C-s` | agent-shell-new-shell | agent-shell |
 | `C-c C-t` | my/agent-shell-view-transcript | agent-shell |
 | `C-c <left>` | winner-undo | winner |
@@ -240,38 +245,40 @@
 | `C-c a` | org-agenda | org |
 | `C-c c` | org-capture | org |
 | `C-c d b` | dape-breakpoint-toggle | dape |
-| `C-c e s` | consult-eglot-symbols | consult-eglot |
 | `C-c f c` | （清窗） | workflow |
 | `C-c f l` | my/workflow-layout | workflow |
-| `C-c g` | consult-git-grep | consult |
 | `C-c j` | avy-goto-char | avy |
 | `C-c J` | avy-goto-line | avy |
-| `C-c k` | consult-ripgrep | consult |
 | `C-c l` | org-store-link | org |
+| `C-c l a` | eglot-code-actions | eglot |
+| `C-c l d` | eglot-find-declaration | eglot |
+| `C-c l f` | eglot-format | eglot |
+| `C-c l h` | eglot-help-at-point | eglot |
+| `C-c l i` | eglot-find-implementation | eglot |
+| `C-c l o` | eglot-code-action-organize-imports | eglot |
+| `C-c l r` | eglot-rename | eglot |
+| `C-c l t` | eglot-find-typeDefinition | eglot |
 | `C-c p b` | project-switch-to-buffer | project |
 | `C-c p d` | project-dired | project |
-| `C-c p f` | project-find-file | project |
-| `C-c p g` | project-find-regexp | project |
 | `C-c p p` | my/project-switch-project | workflow |
 | `C-c p s` | eat-project | eat |
 | `C-c p v` | project-vc-dir | project |
 | `C-c p w` | my/project-save-layout | workflow |
 | `C-c p W` | my/project-restore-layout | workflow |
 | `C-c r n` | my/npm-run | web |
-| `C-c s a` | eglot-code-actions | eglot |
-| `C-c s d` | eglot-find-declaration | eglot |
-| `C-c s f` | eglot-format | eglot |
-| `C-c s h` | eglot-help-at-point | eglot |
-| `C-c s i` | eglot-find-implementation | eglot |
-| `C-c s r` | eglot-rename | eglot |
-| `C-c s t` | eglot-find-typeDefinition | eglot |
+| `C-c s b` | consult-buffer | search |
+| `C-c s e` | consult-eglot-symbols | search |
+| `C-c s f` | project-find-file | search |
+| `C-c s g` | consult-git-grep | search |
+| `C-c s k` | consult-ripgrep | search |
+| `C-c s m` | consult-bookmark | search |
+| `C-c s o` | consult-locate | search |
+| `C-c s p` | project-find-regexp | search |
+| `C-c s r` | consult-recent-file | search |
 | `C-c W` | avy-goto-word-1 | avy |
 | `C-h B` | embark-bindings | embark |
 | `C-M-s` | consult-line-multi | consult |
-| `C-x b` | consult-buffer | consult |
 | `C-x g` | magit-status | magit |
-| `C-x l` | consult-locate | consult |
-| `C-x r b` | consult-bookmark | consult |
 | `C-x t 1` | treemacs-select-window | treemacs |
 | `C-x t d` | treemacs-delete-other-windows | treemacs |
 | `C-x t t` | treemacs | treemacs |
@@ -288,7 +295,6 @@
 | `<f2> i` | consult-info-lookup-symbol | consult |
 | `<f2> u` | consult-unicode-char | consult |
 | `<f5>` | dape | dape |
-| `<f6>` | consult-buffer | consult |
 | `M-<f5>` | dape-hydra/body | dape |
 
 ---
