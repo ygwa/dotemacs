@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Restart TUI Emacs daemon and attach (emacsclient -t).
+# Fixes stale server socket after crash or incomplete kill-emacs.
+set -euo pipefail
+
+EMACS_D="${EMACSD:-$HOME/.emacs.d}"
+UID_NUM="$(id -u)"
+SERVER_DIRS=(
+  "$EMACS_D/server"
+  "/tmp/emacs${UID_NUM}"
+  "${TMPDIR:-/tmp}/emacs${UID_NUM}"
+)
+
+# Graceful shutdown if daemon is running
+emacsclient -e '(save-buffers-kill-emacs)' 2>/dev/null \
+  || emacsclient -e '(kill-emacs)' 2>/dev/null \
+  || true
+
+# Wait for process exit (max ~3s)
+for _ in 1 2 3 4 5 6; do
+  pgrep -x Emacs >/dev/null 2>&1 || break
+  sleep 0.5
+done
+
+# Remove stale server socket when no Emacs remains
+if ! pgrep -x Emacs >/dev/null 2>&1; then
+  for dir in "${SERVER_DIRS[@]}"; do
+    [[ -e "$dir/server" ]] && rm -f "$dir/server"
+  done
+fi
+
+emacs --daemon
+exec emacsclient -t "$@"

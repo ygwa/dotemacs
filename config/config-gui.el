@@ -117,6 +117,8 @@ M-x customize-group my-config 改。"
 ;; ============================================
 
 (setq dashboard-display-icons-p t
+      dashboard-set-heading-icons t
+      dashboard-set-file-icons t
       treemacs-no-png-images nil)
 
 (use-package treemacs-nerd-icons

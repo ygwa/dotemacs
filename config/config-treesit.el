@@ -12,7 +12,8 @@
           (typescript-mode . typescript-ts-mode)
           (json-mode . json-ts-mode)
           (css-mode . css-ts-mode)
-          (python-mode . python-ts-mode)))
+          (python-mode . python-ts-mode)
+          (markdown-mode . markdown-ts-mode)))
 
   ;; tree-sitter 语法库下载源 (M-x treesit-install-language-grammar / my/install-all-treesit-grammars)
   (setq treesit-language-source-alist
@@ -60,7 +61,8 @@
                   (tsx-ts-mode-hook        . tsx)
                   (js-ts-mode-hook         . javascript)
                   (css-ts-mode-hook        . css)
-                  (json-ts-mode-hook       . json)))
+                  (json-ts-mode-hook       . json)
+                  (markdown-ts-mode-hook   . markdown)))
     (add-hook (car pair)
               (lambda ()
                 (let ((lang (cdr pair)))

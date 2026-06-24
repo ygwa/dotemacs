@@ -61,6 +61,7 @@
 ;; 按照逻辑顺序加载
 ;; TUI-first + GUI profile: my/display 检测后加载 config-display-tui 或 config-gui.
 (require 'my-custom)
+(require 'my-project)
 (require 'my-display)
 (mapc #'require '(config-default
 		  config-org
@@ -72,15 +73,13 @@
                   config-treesit
 		  config-web
                   config-package
-                  config-markdown
-                  config-agent
-                  config-ai-core
-                  config-ai-memory
-                  config-ai-review
-                  config-ai-pr-review
-                  config-ai-workbench
-                  config-git-review
-                  config-workflow))
+                  config-markdown))
+(when (memq 'ai my/features)
+  (require 'config-agent)
+  (require 'config-ai))
+(when (memq 'git-review my/features)
+  (require 'config-git-review))
+(require 'config-workflow)
 
 ;; ============================================
 ;; 6. 运行期性能恢复 (启动完成后执行)

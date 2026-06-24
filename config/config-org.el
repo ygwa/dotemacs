@@ -29,8 +29,9 @@ M-x customize-group my-config 改."
         org-hide-emphasis-markers t
         org-confirm-babel-evaluate nil)
 
-  ;; 基础快捷键
-  (global-set-key (kbd "C-c l") #'org-store-link)
+  ;; C-c C-l 避免与 eglot 前缀 C-c l 冲突 (编程 buffer 内)
+  (global-set-key (kbd "C-c C-l") #'org-store-link)
+  (define-key org-mode-map (kbd "C-c C-l") #'org-store-link)
   (global-set-key (kbd "C-c a") #'org-agenda)
   (global-set-key (kbd "C-c c") #'org-capture)
   (define-key org-mode-map (kbd "C-c C-v") #'my/org-preview-dwim)
