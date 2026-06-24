@@ -52,6 +52,8 @@
   :if (memq system-type '(darwin berkeley-unix gnu/linux))
   :ensure t
   :config
+  (setq exec-path-from-shell-check-startup-files nil
+        exec-path-from-shell-silent t)
   (exec-path-from-shell-initialize))
 
 ;; ============================================

@@ -42,7 +42,9 @@ Agenda for the coming week: (a)
 ├── lisp/
 │   ├── my-custom.el       # my-config 变量组（features / theme / forge）
 │   ├── my-project.el      # 统一项目根检测
-│   └── my-display.el      # TUI/GUI profile 检测
+│   ├── my-display.el      # TUI/GUI profile 检测
+│   ├── my-sidebar.el      # 项目作用域 dired 侧栏
+│   └── my-markdown.el     # Markdown 审阅视图、路径链接
 ├── config/
 │   ├── config-default.el  # 基础设置（编码/dired/cursor）
 │   ├── config-org.el      # Org 模式 + Inbox capture
@@ -253,6 +255,8 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 | 键 | 命令 |
 |---|---|
 | `C-c y` | `youdao-dictionary-search-at-point+` |
+| `C-=` / `C--` | `er/expand-region` / `er/contract-region` |
+| `C-c g t` | `git-timemachine`（prog-mode 内） |
 
 ## 📦 外部依赖
 
@@ -271,6 +275,8 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 | `opencode` | agent-shell OpenCode provider | agent 无法启动 | 见 OpenCode 安装文档 |
 | `gh` | GitHub PR review（`C-c C-w h`）| 无法用 gh 拉 PR | `brew install gh` |
 | `glab` | GitLab MR review（`C-c C-w L`）| 无法用 glab 拉 MR | `brew install glab` |
+| `direnv` | 项目 `.envrc` 环境（envrc）| 静默跳过 | `brew install direnv` |
+| `enchant2` + `pkgconf` | jinx 拼写检查 | 静默跳过 | `brew install enchant2 pkgconf` |
 
 **Forge（GitHub / GitLab）** 需 `~/.authinfo` 配置 token，见 [Forge 指南](./docs/forge-guide.md)。无 token 时 Magit 仍可用，Forge 功能不可用。
 
@@ -297,9 +303,13 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 - **ace-window** / **shackle** / **winner** — 窗口管理
 - **smartparens** / **rainbow-delimiters** / **rainbow-mode** — 括号/颜色
 - **vundo** — 撤销可视化
+- **expand-region** — 智能扩大选区
+- **hl-todo** — 高亮 TODO/FIXME 等
+- **envrc** — direnv 项目环境（需 `direnv` 二进制）
 
 ### Git / 审阅
 - **magit** / **forge** / **diff-hl** / **magit-delta** — Git、PR/MR 审阅、行内 diff
+- **git-timemachine** — 当前行 git 历史时间线（`C-c g t`）
 - **flymake-markdownlint** — Markdown 结构 lint
 
 ### 终端与 Shell
@@ -310,6 +320,7 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 
 ### Org
 - **org**（Emacs 30 内置）— Org 模式基础
+- **org-modern**（GUI profile）— 现代 Org 视觉样式
 - **plantuml-mode** — Babel plantuml 代码块
 
 ### 编辑器

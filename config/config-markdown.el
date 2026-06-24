@@ -1,5 +1,7 @@
 ;;; config-markdown.el --- Minimal Markdown configuration  -*- lexical-binding: t; -*-
 
+(require 'my-markdown)
+
 ;; ============================================
 ;; 1. markdown-mode 基础
 ;; ============================================
@@ -16,9 +18,7 @@
   (when (executable-find "pandoc")
     (setq markdown-command "pandoc -f gfm -t html5 --standalone"))
   :hook
-  (markdown-mode . (lambda ()
-                     "Markdown 打开时的本地设置。"
-                     (visual-line-mode 1)))
+  (markdown-mode . my/markdown-on-mode)
   :config
   ;; ============================================
   ;; 编辑期增强
@@ -59,18 +59,18 @@
   :ensure t
   :defer t
   :when (executable-find "markdownlint")
-  :hook (markdown-mode . flymake-markdownlint-setup)
+  :hook ((markdown-mode . flymake-markdownlint-setup)
+         (markdown-ts-mode . flymake-markdownlint-setup))
   :config
-  (add-hook 'markdown-mode-hook #'flymake-mode 90))
+  (dolist (hook '(markdown-mode-hook markdown-ts-mode-hook))
+    (add-hook hook #'flymake-mode 90)))
 
-;; ============================================
-;; Tree-sitter 增强 (Emacs 30+)
-;; ============================================
+(with-eval-after-load 'markdown-ts-mode
+  (add-hook 'markdown-ts-mode-hook #'my/markdown-on-mode)
+  (add-hook 'markdown-view-mode-hook #'my/markdown-review-mode-hook))
 
-(when (and (>= emacs-major-version 30)
-           (fboundp 'treesit-ready-p)
-           (treesit-ready-p 'markdown t))
-  (add-to-list 'major-mode-remap-alist '(markdown-mode . markdown-ts-mode)))
+(add-hook 'markdown-view-mode-hook #'my/markdown-review-mode-hook)
+(my/markdown-setup-keys)
 
 (provide 'config-markdown)
 ;;; config-markdown.el ends here

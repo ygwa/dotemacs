@@ -127,5 +127,16 @@ M-x customize-group my-config 改。"
 
 (setq browse-url-browser-function #'browse-url-default-browser)
 
+;; ============================================
+;; 9. Org 视觉增强 (GUI only)
+;; ============================================
+
+(use-package org-modern
+  :ensure t
+  :hook (org-mode . org-modern-mode)
+  :custom
+  (org-modern-star 'replace)
+  (org-modern-hide-stars nil))
+
 (provide 'config-gui)
 ;;; config-gui.el ends here

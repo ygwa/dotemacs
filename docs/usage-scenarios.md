@@ -61,7 +61,7 @@ emacsclient -c -s emacs-gui
 
 ### AI 编程工作流（一键布局）
 
-按 `C-c f l` → 左侧 treemacs 文件树 + 右侧 agent-shell 面板（OpenCode 接管）。退出时 `C-c f c` 清窗。
+按 `C-c f l` → 左侧 sidebar（项目 dired）+ 右侧 agent-shell 面板（OpenCode 接管）。退出时 `C-c f c` 清窗。
 
 ### 代码 / Git / Markdown 审阅 → AI
 
@@ -140,9 +140,7 @@ emacsclient -c -s emacs-gui
 
 ## 🔮 计划中的指南
 
-- **Python 开发** — Eglot + debugpy + dape
 - **TypeScript/JavaScript 开发** — Eglot + vscode-js-debug + apheleia(prettier)
-- **Go 开发** — Eglot + gopls
 
 ## 🤝 贡献指南
 

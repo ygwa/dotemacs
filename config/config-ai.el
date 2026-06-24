@@ -91,14 +91,13 @@
         (delete-region (point-min) (point))))))
 
 (defun my/ai-show-buffer (buffer-name content &optional major-mode)
-  "Show CONTENT in BUFFER-NAME using MAJOR-MODE (default `markdown-mode')."
+  "Show CONTENT in BUFFER-NAME using MAJOR-MODE (default `my/markdown-activate')."
   (let ((buf (get-buffer-create buffer-name)))
     (with-current-buffer buf
       (let ((inhibit-read-only t))
         (erase-buffer)
         (insert content)
-        (when major-mode (funcall major-mode))
-        (unless major-mode (require 'markdown-mode) (markdown-mode))
+        (funcall (or major-mode #'my/markdown-activate))
         (read-only-mode 1)
         (goto-char (point-min))))
     (display-buffer buf
@@ -456,7 +455,7 @@
     (user-error "Point must be at an Org heading"))
   (my/ai-bootstrap-project)
   (let ((text (my/ai--org-subtree-text)))
-    (with-current-buffer (my/ai-show-buffer my/ai--plan-buffer text #'markdown-mode)
+    (with-current-buffer (my/ai-show-buffer my/ai--plan-buffer text nil)
       (read-only-mode 1))
     (my/ai-log "Org task loaded into *AI-Plan*")
     (message "Task → *AI-Plan* (C-c C-w a to send to agent)")))
@@ -596,6 +595,9 @@
                '(my/ai-review-local . "AI review local diff"))
   (add-to-list 'embark-general-alt-commands
                '(my/ai-pr-review . "AI review PR/MR (gh/glab)")))
+
+(when (fboundp 'my/markdown-setup-keys)
+  (my/markdown-setup-keys))
 
 (provide 'config-ai)
 ;;; config-ai.el ends here

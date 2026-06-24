@@ -27,11 +27,11 @@
 1. **日常入口**：启动即见 Dashboard（最近文件、项目、Org Agenda），快速进入工作状态  
 2. **项目管理**：基于 Git + `project.el`，支持非 Git 前端项目（`package.json` 等 marker）  
 3. **编程体验**：Tree-sitter 语法高亮 + Eglot LSP + Corfu 补全 + Consult 搜索  
-4. **AI 辅助开发**：Treemacs 文件树 + agent-shell（OpenCode）右侧面板，一键布局  
+4. **AI 辅助开发**：Sidebar 文件树 + agent-shell（OpenCode）右侧面板，一键布局  
 5. **知识管理**：Org Inbox capture + Agenda，与 Dashboard 联动  
 6. **多语言支持**：Rust / Python / TypeScript·JS / Web 前端 / Markdown  
 7. **终端集成**：Eat 按项目作用域切换，适合 TUI 工作流  
-8. **Git 工作流**：Magit 状态管理 + treemacs-magit 集成  
+8. **Git 工作流**：Magit 状态管理 + diff-hl / Forge 审阅  
 
 ---
 
@@ -46,17 +46,15 @@ config-default         → 编码、dired、光标
 config-org             → Org 路径、capture、agenda
 config-shared          → 主题、modeline 公共项、窗口
 config-display-tui     → TUI profile（字符级图标、dashboard 纯文本）
-  或 config-gui        → GUI profile（字体、Nerd 图标、平滑滚动）
-  + config-preview-gui → GUI 浏览器预览
+  或 config-gui        → GUI profile（字体、Nerd 图标、org-modern、浏览器预览）
 config-dashboard       → 启动页（Git dirty / Projects 🔥）
 config-treesit       → Tree-sitter 语法库与 mode remap
 config-web             → 前端 LSP、Prettier、npm 脚本
-config-package       → 编排层（vcs-terminal / completion / navigation / lsp / lang-* / tools / debug）
-config-markdown      → Markdown 编辑与预览
+config-package       → 编排层（vcs / edit / lang-* / debug）
+config-markdown      → Markdown 编辑与预览（含 my-markdown 审阅）
 config-agent         → agent-shell + OpenCode（my/features 含 ai）
-config-ai            → AI workbench 入口（聚合 config-ai-*）
-config-git-review    → diff-hl / forge / magit-delta（my/features 含 git-review）
-config-workflow      → treemacs + 一键 AI 布局 + tab-bar（可选）
+config-ai            → AI workbench
+config-workflow      → sidebar + 一键 AI 布局 + tab-bar
 ```
 
 **推荐启动方式：**
@@ -92,7 +90,7 @@ emacsclient -c -s emacs-gui
 | 主题 | **catppuccin** mocha，24-bit color 终端 | 同左 |
 | Mode line | **doom-modeline**，关闭像素/unicode 图标 | Nerd Font 图标全开 |
 | 启动页 | **dashboard** 纯文本 | dashboard + nerd icons |
-| Treemacs | 无 PNG 图标 | **treemacs-nerd-icons** |
+| Sidebar | dired 项目树 | dired + nerd-icons-dired |
 | 字体 | 终端字体 | JetBrains Mono + CJK fallback |
 | 滚动 | 终端原生 | 像素平滑滚动 + context menu |
 | 行号 | `prog-mode` 相对行号；Org 关闭 | 同左 |
@@ -118,7 +116,7 @@ emacsclient -c -s emacs-gui
 
 - **project.el**（Emacs 30 内置）：`C-c p *` 前缀  
 - 扩展 root marker：`package.json`、`requirements.txt`、`.project`  
-- **treemacs** + **treemacs-magit**：左侧文件树，Git 状态集成  
+- **my/sidebar**（`lisp/my-sidebar.el`）：项目作用域 dired 侧栏，零外部依赖
 - **shackle** + **ace-window** + **winner** + **windmove**：窗口布局与快速切换  
 
 ### 3.4 编程与 LSP
@@ -187,7 +185,7 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 - 右侧 side window（40% 宽），跟随 VCS 项目根  
 - 对话 transcript 自动保存到 `.agent/transcripts/`（与 workbench 共用 `.agent/` 目录）  
 - 上下文注入：region / 文件 / 错误行 / 当前行  
-- 一键布局 `C-c f l`：左 treemacs + 右 agent-shell  
+- 一键布局 `C-c f l`：左 sidebar + 右 agent-shell  
 
 ### 3.11 终端
 
@@ -220,13 +218,15 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 
 **补全与搜索：** vertico, orderless, marginalia, corfu, cape, consult, embark, embark-consult, avy, consult-eglot  
 
-**编辑与 UI：** catppuccin-theme, doom-modeline, dashboard, nerd-icons-dired, nerd-icons-corfu, ace-window, shackle, rainbow-delimiters, rainbow-mode, smartparens, vundo, jinx, ws-butler  
+**编辑与 UI：** catppuccin-theme, doom-modeline, dashboard, nerd-icons-dired, nerd-icons-corfu, ace-window, shackle, rainbow-delimiters, rainbow-mode, smartparens, vundo, jinx, ws-butler, expand-region, hl-todo
 
-**开发工具：** magit, eat, apheleia, dape, plantuml-mode  
+**开发工具：** magit, eat, apheleia, dape, plantuml-mode, git-timemachine, envrc  
 
-**AI 与工作流：** agent-shell, treemacs, treemacs-magit  
+**AI 与工作流：** agent-shell
 
-**语言模式：** markdown-mode  
+**语言模式：** markdown-mode
+
+**Org（GUI）：** org-modern  
 
 **环境：** exec-path-from-shell  
 
@@ -245,6 +245,7 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 | python + debugpy | Python 调试 |
 | node + vscode-js-debug | Node 调试 |
 | lldb-dap | Rust 调试 |
+| direnv | 项目 `.envrc` 环境（envrc） |
 | enchant2 + pkgconf | jinx 拼写检查 |
 | opencode | AI agent（agent-shell） |
 
@@ -268,7 +269,7 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 | `C-c r n` | Web/Node | npm/yarn/pnpm 跑脚本 |
 | `C-c j/J/W` | avy | 屏幕内跳转 |
 | `C-c a/c/C-l` | org | agenda / capture / store-link |
-| `C-x t *` | treemacs | `t` 切换、`1` 聚焦 |
+| `C-x t *` | sidebar | `t` 打开、`1`/`d` 切换 |
 | `C-x g` | magit | Git 状态 |
 | `M-o` | ace-window | 窗口跳转与分屏 |
 | `C-` ` | my/eat-toggle | 项目终端 |
@@ -328,7 +329,7 @@ C-c C-t      view agent transcript     查看 AI 对话记录
 
 ### 6.2 AI 辅助编程
 
-1. 进入项目 → `C-c f l`（treemacs + agent-shell）  
+1. 进入项目 → `C-c f l`（sidebar + agent-shell）  
 2. 左侧浏览文件，右侧与 OpenCode 对话  
 3. `C-c C-t` 在 Markdown 中查看 transcript  
 4. 结束 → `C-c f c` 清窗  

@@ -28,6 +28,7 @@
 
 ;; 抑制 ELPA 旧包 (如 names/youdao-dictionary) 的 defadvice obsolete 警告
 (setq warning-suppress-log-types '((obsolete . defadvice)))
+(setq warning-suppress-types '(obsolete))
 
 ;; 禁用 UI 栏 (Emacs 30 这样写更高效)
 (push '(menu-bar-lines . 0) default-frame-alist)

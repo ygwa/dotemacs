@@ -99,6 +99,7 @@
 | （prog-mode 自动） | `diff-hl-mode` | 行内未提交改动标记 |
 | `C-x g` | `magit-status` | Magit 状态窗 |
 | `C-c C-d` | `my/magit-send-diff-to-agent` | Magit buffer 内送 diff 到 agent |
+| `C-c g t` | `git-timemachine` | 当前行 git 历史时间线（再按 `q` 退出） |
 | `'` | `forge-dispatch` | Magit 内 Forge 菜单（GitHub / GitLab PR/MR） |
 | 详见 [Forge 指南](./forge-guide.md) | | token 配置与自托管 GitLab |
 
@@ -106,9 +107,12 @@
 
 | 键位 | 命令 | 说明 |
 |---|---|---|
+| `C-c C-p` | `my/markdown-preview-dwim` | TUI 渲染视图 / GUI 浏览器预览 |
+| `C-c C-r` | `my/markdown-toggle-review-view` | 切换审阅视图（路径可点击、表格对齐） |
+| `C-c C-o` | `my/markdown-follow-thing-at-point` | 跟随链接 / 打开项目内文件路径 |
+| `C-c C-t` | `my/markdown-align-all-tables` | 对齐全部 GFM 表格 |
 | `C-c C-d` | `my/markdown-send-to-agent` | 送 region 或全文到 agent |
 | （markdown-mode 自动） | `flymake-mode` + markdownlint | 需 `markdownlint` 二进制 |
-| `M-x markdown-view-mode` | TUI 渲染视图 | 只读预览 |
 
 ## 🧠 LSP（eglot，编程 buffer 内）
 
@@ -142,19 +146,19 @@
 | `S-M-<down>` | `windmove-swap-states-down` | 移窗 |
 | `S-<return>` | `my/toggle-frame-fullscreen` | **GUI**：切换原生全屏（iTerm2 风格；TUI daemon + `emacsclient -c` 亦可用） |
 
-## 🌲 Treemacs 文件树
+## 🌲 Sidebar（项目作用域 dired）
 
 | 键位 | 命令 | 说明 |
 |---|---|---|
-| `C-x t 1` | `treemacs-select-window` | 跳到 treemacs 窗 |
-| `C-x t t` | `treemacs` | 切换 treemacs |
-| `C-x t d` | `treemacs-delete-other-windows` | 删其它窗 |
+| `C-x t t` | `my/sidebar-open` | 打开 / 聚焦项目根 sidebar |
+| `C-x t 1` | `my/sidebar-toggle` | 切换 sidebar |
+| `C-x t d` | `my/sidebar-toggle` | 切换 sidebar（与 `1` 同义） |
 
 ## 🛠️ 工作流布局
 
 | 键位 | 命令 | 说明 |
 |---|---|---|
-| `C-c f l` | `my/workflow-layout` | 一键 AI 工作台：左 treemacs + 右 agent-shell |
+| `C-c f l` | `my/workflow-layout` | 一键 AI 工作台：左 sidebar + 右 agent-shell |
 | `C-c f c` | （清窗 lambda） | 关掉所有其它窗 |
 | `C-c r n` | `my/npm-run` | 选 pnpm > yarn > npm 跑 `package.json` 脚本（web/node 项目） |
 | `C-c y` | `youdao-dictionary-search-at-point+` | 光标处查词典 |
@@ -189,6 +193,13 @@
 | `C-z` | `undo` | 撤销（默认） |
 | `C-x u` | `vundo` | 可视化撤销树 |
 
+## ✂️ 选区
+
+| 键位 | 命令 | 说明 |
+|---|---|---|
+| `C-=` | `er/expand-region` | 逐步扩大选区 |
+| `C--` | `er/contract-region` | 缩小选区 |
+
 ## ✏️ 拼写（Jinx）
 
 | 键位 | 命令 | 说明 |
@@ -204,6 +215,8 @@
 | `C-c c` | `org-capture` | 捕获条目（Inbox / 任务） |
 | `C-c a` | `org-agenda` | 打开 agenda |
 | `C-c C-l` | `org-store-link` | 存链接（双 Ctrl，避免与 eglot `C-c l` 冲突） |
+
+> GUI profile 下 `org-modern-mode` 自动启用（更现代的标题/列表样式）。
 
 ## 🌐 Web / Node
 
@@ -259,6 +272,7 @@
 | `C-c l o` | eglot-code-action-organize-imports | eglot |
 | `C-c l r` | eglot-rename | eglot |
 | `C-c l t` | eglot-find-typeDefinition | eglot |
+| `C-c g t` | git-timemachine | vcs |
 | `C-c p b` | project-switch-to-buffer | project |
 | `C-c p d` | project-dired | project |
 | `C-c p p` | my/project-switch-project | workflow |
@@ -279,10 +293,12 @@
 | `C-c W` | avy-goto-word-1 | avy |
 | `C-h B` | embark-bindings | embark |
 | `C-M-s` | consult-line-multi | consult |
+| `C-=` | er/expand-region | edit |
+| `C--` | er/contract-region | edit |
 | `C-x g` | magit-status | magit |
-| `C-x t 1` | treemacs-select-window | treemacs |
-| `C-x t d` | treemacs-delete-other-windows | treemacs |
-| `C-x t t` | treemacs | treemacs |
+| `C-x t 1` | my/sidebar-toggle | sidebar |
+| `C-x t d` | my/sidebar-toggle | sidebar |
+| `C-x t t` | my/sidebar-open | sidebar |
 | `C-x u` | vundo | vundo |
 | `C-z` | undo | undo |
 | `M-$` | jinx-correct | jinx |

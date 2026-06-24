@@ -62,7 +62,7 @@ Capture 模板 `C-c c` → **`a` AI Task**：
   - ...
 ```
 
-`C-c C-w n` = capture + treemacs/agent 布局。
+`C-c C-w n` = capture + sidebar/agent 布局。
 
 ---
 

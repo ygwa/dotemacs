@@ -14,7 +14,7 @@ GUI daemon 可通过环境变量 MY_EMACS_GUI=1 标记."
       (if (executable-find "pandoc")
           (markdown-preview)
         (user-error "需要 pandoc 才能浏览器预览 Markdown"))
-    (if (derived-mode-p 'markdown-mode 'gfm-mode)
+    (if (my/markdown-mode-p)
         (call-interactively
          (if (eq major-mode 'gfm-mode) #'gfm-view-mode #'markdown-view-mode))
       (user-error "当前 buffer 不是 Markdown"))))
@@ -65,7 +65,10 @@ Like iTerm2 Shift+Return: normal ↔ fullscreen."
   (unless my/display--gui-keys-bound
     (setq my/display--gui-keys-bound t)
     (dolist (key '("S-<return>" "<S-return>"))
-      (global-set-key (kbd key) #'my/toggle-frame-fullscreen))))
+      (global-set-key (kbd key) #'my/toggle-frame-fullscreen))
+    ;; macOS: 抑制未绑定的 Super+鼠标拖拽提示
+    (when (eq system-type 'darwin)
+      (global-set-key (kbd "s-<drag-mouse-1>") #'ignore))))
 
 (defun my/display--ensure-gui-profile (frame)
   "Late-load GUI profile when the first graphic frame appears."

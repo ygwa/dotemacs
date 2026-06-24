@@ -37,5 +37,19 @@
 (when (fboundp 'set-charset-priority)
   (set-charset-priority 'unicode))
 
+;; ============================================
+;; 项目环境 (.envrc / direnv)
+;; ============================================
+;; 需先安装 direnv 二进制, 再 M-x package-install RET envrc RET
+
+(defun my/maybe-enable-envrc ()
+  "Enable envrc when direnv binary and envrc package are both present."
+  (when (and (executable-find "direnv")
+             (require 'envrc nil t))
+    (envrc-mode 1)))
+
+(when (executable-find "direnv")
+  (add-hook 'after-init-hook #'my/maybe-enable-envrc))
+
 (provide 'config-default)
 

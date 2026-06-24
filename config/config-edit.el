@@ -119,7 +119,9 @@
   :init
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
-  (add-to-list 'completion-at-point-functions #'cape-history))
+  (add-to-list 'completion-at-point-functions #'cape-history)
+  (add-to-list 'completion-at-point-functions #'cape-capf)
+  (add-to-list 'completion-at-point-functions #'cape-elisp))
 
 ;; ============================================
 ;; §3 LSP — Eglot client + consult-eglot symbols
@@ -152,7 +154,11 @@
     (when ra
       (add-to-list 'eglot-server-programs `(rust-mode . ,(vector ra)) t)
       (add-to-list 'eglot-server-programs `(rust-ts-mode . ,(vector ra)) t)))
-  (define-key eglot-mode-map (kbd "C-c l") my/eglot-map))
+  (define-key eglot-mode-map (kbd "C-c l") my/eglot-map)
+  (add-hook 'eglot-managed-mode-hook #'eldoc-mode))
+
+(with-eval-after-load 'xref
+  (add-hook 'xref-after-jump-hook #'xref-pulse-at-point))
 
 (use-package consult-eglot
   :ensure t
@@ -230,6 +236,17 @@
   :ensure t
   :defer t
   :hook ((prog-mode text-mode) . ws-butler-mode))
+
+(use-package expand-region
+  :ensure t
+  :defer t
+  :bind (("C-=" . er/expand-region)
+         ("C--" . er/contract-region)))
+
+(use-package hl-todo
+  :ensure t
+  :defer t
+  :hook (prog-mode . hl-todo-mode))
 
 (provide 'config-edit)
 ;;; config-edit.el ends here

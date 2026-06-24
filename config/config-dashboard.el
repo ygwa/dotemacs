@@ -75,7 +75,6 @@
    ((file-exists-p (expand-file-name "package.json" root)) "web")
    ((file-exists-p (expand-file-name "Cargo.toml" root)) "rust")
    ((file-exists-p (expand-file-name "requirements.txt" root)) "py")
-   ((file-exists-p (expand-file-name "go.mod" root)) "go")
    (t "proj")))
 
 (defun my/dashboard--time-greeting ()
@@ -131,7 +130,7 @@
     #'null
     (list
      (when (memq 'ai my/features)
-       (list "⚡" "AI 布局" "Treemacs + Agent"
+       (list "⚡" "AI 布局" "Sidebar + Agent"
              (my/dashboard--nav-action #'my/dashboard--ai-layout)
              'font-lock-function-name-face nil nil))
      (when (fboundp 'magit-status)

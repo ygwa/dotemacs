@@ -46,6 +46,11 @@
   (setq magit-push-always-verify nil
         magit-revert-buffers t))
 
+(use-package git-timemachine
+  :ensure t
+  :defer t
+  :bind (("C-c g t" . git-timemachine)))
+
 (defun my/eat-toggle ()
   "Toggle Eat terminal for current project (show/hide project-scoped buffer)."
   (interactive)

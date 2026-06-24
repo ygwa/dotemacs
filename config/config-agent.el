@@ -88,7 +88,7 @@
   (when-let ((file agent-shell--transcript-file))
     (let ((buf (find-file-noselect file)))
       (with-current-buffer buf
-        (markdown-mode)
+        (my/markdown-activate)
         (read-only-mode 1))
       (display-buffer buf
                       '((display-buffer-reuse-window

@@ -49,7 +49,7 @@ machine gitlab.example.com login YOUR_USERNAME^forge password glpat-xxxx
 
 ### 4. 自托管 GitLab（可选）
 
-在 `config/config-git-review.el` 或 `custom.el` 中设置：
+在 `config/config-vcs.el` 或 `custom.el` 中设置：
 
 ```elisp
 (setq my/forge-extra-gitlab-instances
