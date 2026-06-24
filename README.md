@@ -60,7 +60,7 @@ Agenda for the coming week: (a)
 │   ├── config-ai.el       # AI 工作台（5 节：core/review/PR/memory/workbench）
 │   ├── config-debug.el    # Dape 调试（按 adapter 分）
 │   ├── config-package.el  # 编排层（require 子模块）
-│   └── config-workflow.el # 工作流布局（treemacs + AI panel + 多项目 + tab-bar）
+│   └── config-workflow.el # 工作流布局（sidebar dired + AI panel + 多项目 + tab-bar）
 ├── bin/setup-treesit.sh   # 一键安装 tree-sitter 语法库
 ├── tree-sitter/           # tree-sitter 语法库
 ├── var/                   # 运行时数据
@@ -175,7 +175,7 @@ Vertico 在 minibuffer 中自动启用，`C-n/C-p` 导航。
 | `C-c C-a` | `agent-shell-toggle` | 显示/隐藏 agent 面板 |
 | `C-c C-o` | `agent-shell-opencode-start-agent` | 启动 OpenCode |
 | `C-c C-d` | 送 diff/文档到 agent | Magit / Markdown buffer 内；仅插入内容，无 preset prompt |
-| `C-c f l` | `my/workflow-layout` | 左 treemacs + 右 agent |
+| `C-c f l` | `my/workflow-layout` | 左 sidebar (dired @ 项目根) + 右 agent |
 
 Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CLI 审阅：`C-c C-w g/h/L`（gh/glab）。详见 [AI Workbench](./docs/ai-workbench.md) 与 [Forge 指南](./docs/forge-guide.md)。
 
@@ -231,6 +231,18 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 |---|---|---|
 | `C-c C-f` | `apheleia-format-buffer` | TS/TSX/JS/CSS/JSON/HTML（Prettier）|
 | `C-c C-f` | `eglot-format-buffer` | `rust-ts-mode` |
+
+### Sidebar（项目作用域 dired）
+
+替代 treemacs。`C-x t` 前缀 + dired 经典交互（`RET`/`n`/`p`/`+`/`g`/`d`）。
+
+| 键 | 命令 | 说明 |
+|---|---|---|
+| `C-x t t` | `my/sidebar-open` | 打开 / 聚焦项目根 sidebar |
+| `C-x t 1` | `my/sidebar-toggle` | 切换 sidebar |
+| `C-x t d` | `my/sidebar-toggle` | 切换 sidebar（与 `t 1` 同义）|
+
+特性：跟随 `(my/project-root)`、切项目自动换 buffer、TUI/GUI 同样工作、零外部依赖。
 
 ### Web / Node
 
@@ -337,7 +349,7 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 
 - **启动**：前台 `emacs`，或 `MY_EMACS_GUI=1 emacs --daemon=emacs-gui` + `emacsclient -c`
 - **字体**：JetBrains Mono + CJK fallback（`M-x customize-group my-config`）
-- **图标**：doom-modeline / dashboard / treemacs 启用 Nerd Font
+- **图标**：doom-modeline / dashboard 启用 Nerd Font（sidebar 是 dired，用 Emacs 自带颜色，无需 Nerd Font）
 - **滚动**：像素平滑滚动 + 右键 context menu
 - **预览**：`C-c C-p`（Markdown → 浏览器）、`C-c C-v`（Org → HTML 浏览器）
 
