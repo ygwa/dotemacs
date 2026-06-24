@@ -39,6 +39,10 @@ Agenda for the coming week: (a)
 ├── early-init.el          # 早期初始化（GC / frame / native-comp）
 ├── init.el                # 主入口
 ├── custom.el              # custom-set-variables 自动生成
+├── lisp/
+│   ├── my-custom.el       # my-config 变量组（features / theme / forge）
+│   ├── my-project.el      # 统一项目根检测
+│   └── my-display.el      # TUI/GUI profile 检测
 ├── config/
 │   ├── config-default.el  # 基础设置（编码/dired/cursor）
 │   ├── config-org.el      # Org 模式 + Inbox capture
@@ -48,14 +52,18 @@ Agenda for the coming week: (a)
 │   ├── config-preview-gui.el # GUI 浏览器预览默认
 │   ├── config-dashboard.el # 启动页：Git dirty + Projects 🔥
 │   ├── config-treesit.el  # Tree-sitter 语法库源、mode remap、一键安装
-│   ├── config-package.el  # 包管理 + 编程工具（vertico/corfu/consult/eglot）
+│   ├── config-web.el      # Web 前端（LSP / Prettier / npm）
+│   ├── config-package.el  # 编排层（require 子模块）
+│   ├── config-completion.el / config-navigation.el / config-lsp.el
+│   ├── config-vcs-terminal.el / config-tools.el / config-debug.el
+│   ├── config-lang-python.el / config-lang-rust.el
 │   ├── config-markdown.el # Markdown 编辑与预览
-│   ├── config-web.el      # Web 前端（tree-sitter/apheleia/eglot）
 │   ├── config-agent.el    # agent-shell + OpenCode + 审阅桥
-│   ├── config-ai-*.el     # Agent OS 层 (memory/review/pr/workbench)
+│   ├── config-ai.el       # AI workbench 入口（聚合 config-ai-*）
 │   ├── config-git-review.el # diff-hl / magit-delta / forge
 │   └── config-workflow.el # 工作流布局（treemacs + AI panel + 多项目）
-├── tree-sitter/           # tree-sitter 语法库（运行 M-x treesit-install-language-grammar 安装）
+├── bin/setup-treesit.sh   # 一键安装 tree-sitter 语法库
+├── tree-sitter/           # tree-sitter 语法库
 ├── var/                   # 运行时数据
 └── docs/                  # 详细使用指南
 ```
@@ -70,7 +78,9 @@ git clone <repo> ~/.emacs.d
 
 启动后第一次会从 USTC 镜像下载 ~50 个包，耗时约 30s-2min。
 
-> Web/TS 项目的 tree-sitter 语法库 (typescript/tsx/javascript/css/json/html/yaml) 需手动安装：打开任一 .ts 文件后跑 `M-x treesit-install-language-grammar` 按提示逐个装，或 `M-x my/install-all-treesit-grammars` 一键全装。Rust 语法库已预编译在 `tree-sitter/libtree-sitter-rust.dylib`，开箱即用。
+> Web/TS 项目的 tree-sitter 语法库需手动安装：打开任一 .ts 文件后跑 `M-x treesit-install-language-grammar`，或 `M-x my/install-all-treesit-grammars`，或 `./bin/setup-treesit.sh` 一键全装。Rust 语法库已预编译在 `tree-sitter/libtree-sitter-rust.dylib`，开箱即用。
+
+可选模块（`M-x customize-variable my/features`）：`ai`（agent + workbench）、`git-review`（diff-hl/forge/delta）、`tab-bar`（按项目分组 tab，GUI 推荐）。
 
 ## ⚙️ 加载顺序
 
@@ -81,7 +91,8 @@ config-default  →  config-org  →  config-shared
               →  config-display-tui（TUI）或 config-gui + config-preview-gui（GUI）
               →  config-dashboard  →  config-treesit
               →  config-web  →  config-package →  config-markdown
-              →  config-agent →  config-ai-* →  config-git-review →  config-workflow
+              →  config-agent + config-ai（`my/features` 含 `ai` 时）
+              →  config-git-review（`my/features` 含 `git-review` 时）→  config-workflow
 ```
 
 **启动方式：**
@@ -187,7 +198,7 @@ Magit 内 Forge（GitHub / GitLab PR/MR）：按 `'` 打开 dispatch 菜单。CL
 |---|---|
 | `C-c c` | `org-capture`（`i` Inbox）|
 | `C-c a` | `org-agenda` |
-| `C-c l` | `org-store-link` |
+| `C-c C-l` | `org-store-link` |
 
 ### LSP（eglot，编程 buffer 内）⭐
 

@@ -1,7 +1,7 @@
 # AI Workbench（Agent OS 层）
 
 > 前缀 **`C-c C-w`** — AI 工作台（不含 AI Context Engineering UI）。
-> 项目数据目录：**`.agent/`**（与 `.agent-shell/transcripts/` 并存）。
+> 项目数据目录：**`.agent/`**（含 profiles、reviews、transcripts）。
 
 ## 目录结构
 
@@ -13,8 +13,9 @@ project/.agent/
 │   ├── planner.md
 │   ├── coder.md
 │   └── reviewer.md
-└── reviews/
-    └── YYYY-MM-DD-HHMMSS.review.md
+├── reviews/
+│   └── YYYY-MM-DD-HHMMSS.review.md
+└── transcripts/        # agent-shell 对话记录（自动保存）
 ```
 
 首次使用任一 `C-c C-w` 命令会自动 bootstrap 模板文件。
@@ -103,7 +104,7 @@ Capture 模板 `C-c c` → **`a` AI Task**：
 | `git-diff` | 当前项目 diff |
 | `git-log` | 最近 20 条 commit |
 | `search-code` | ripgrep / git grep |
-| `run-shell` | 在项目根跑 shell 命令 |
+| `run-shell` | 在项目根跑 shell 命令（执行前确认） |
 | `open-memory` | 读取 memory.org |
 
 输出显示在 `*AI-Log*`，可选送 agent。
@@ -118,12 +119,12 @@ Capture 模板 `C-c c` → **`a` AI Task**：
 | `*AI-Review*` | 本地 diff / PR / MR |
 | `*AI-Log*` | 工作台事件（非 chat transcript） |
 
-Transcript 仍在 `.agent-shell/transcripts/`。
+Transcript 保存在 `.agent/transcripts/`（与 workbench 共用 `.agent/` 根目录）。
 
 ---
 
-## 模块加载顺序
+## 模块加载
 
-`config-ai-core` → `memory` → `review` → `pr-review` → `workbench`
+`init.el` → `config-agent` + `config-ai`（`my/features` 含 `ai` 时；内部聚合 core/memory/review/pr-review/workbench）
 
 详见 [configuration-overview.md](./configuration-overview.md)。

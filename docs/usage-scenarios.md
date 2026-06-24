@@ -122,7 +122,7 @@ emacsclient -c -s emacs-gui
 
 - `C-c c` → 选 `i` 进 Inbox（headline "Inbox"）
 - `C-c a` → 开 agenda
-- `C-c l` → 存当前位置为链接
+- `C-c C-l` → 存当前位置为链接
 
 > 当前 `config-org.el` 只配 Inbox capture，TODO 走 agenda + headline，不在 capture 里。
 

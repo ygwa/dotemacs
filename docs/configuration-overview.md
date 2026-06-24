@@ -40,7 +40,7 @@
 ```
 early-init.el          → GC / frame / native-comp / 禁用 splash
         ↓
-init.el                → load-path / package / exec-path-from-shell / my-display
+init.el                → load-path / package / my-custom / my-project / my-display
         ↓
 config-default         → 编码、dired、光标
 config-org             → Org 路径、capture、agenda
@@ -51,12 +51,12 @@ config-display-tui     → TUI profile（字符级图标、dashboard 纯文本�
 config-dashboard       → 启动页（Git dirty / Projects 🔥）
 config-treesit       → Tree-sitter 语法库与 mode remap
 config-web             → 前端 LSP、Prettier、npm 脚本
-config-package       → 补全、搜索、Magit、eglot、dape、jinx
+config-package       → 编排层（vcs-terminal / completion / navigation / lsp / lang-* / tools / debug）
 config-markdown      → Markdown 编辑与预览
-config-agent         → agent-shell + OpenCode
-config-ai-*          → Agent OS（memory / review / gh+glab / workbench）
-config-git-review    → diff-hl / forge / magit-delta
-config-workflow      → treemacs + 一键 AI 布局
+config-agent         → agent-shell + OpenCode（my/features 含 ai）
+config-ai            → AI workbench 入口（聚合 config-ai-*）
+config-git-review    → diff-hl / forge / magit-delta（my/features 含 git-review）
+config-workflow      → treemacs + 一键 AI 布局 + tab-bar（可选）
 ```
 
 **推荐启动方式：**
@@ -172,7 +172,7 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 - Capture：`C-c c` → `i` 写入 Inbox headline  
 - Agenda：`C-c a`；Dashboard 展示本周 agenda  
 - 预览：`C-c C-v` → GUI 导出 HTML 并在浏览器打开；TUI 提示用导出或 agenda  
-- 存链接：`C-c l`  
+- 存链接：`C-c C-l`  
 
 ### 3.9 Markdown
 
@@ -185,7 +185,7 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 
 - **agent-shell** + **OpenCode**（`opencode acp`）  
 - 右侧 side window（40% 宽），跟随 VCS 项目根  
-- 对话 transcript 自动保存到 `.agent-shell/transcripts/`  
+- 对话 transcript 自动保存到 `.agent/transcripts/`（与 workbench 共用 `.agent/` 目录）  
 - 上下文注入：region / 文件 / 错误行 / 当前行  
 - 一键布局 `C-c f l`：左 treemacs + 右 agent-shell  
 
@@ -267,7 +267,7 @@ Emacs 30 内置 DAP 客户端 **dape**，替代 dap-mode：
 | `C-c f *` | workflow 布局 | `l` 一键 AI 工作台 |
 | `C-c r n` | Web/Node | npm/yarn/pnpm 跑脚本 |
 | `C-c j/J/W` | avy | 屏幕内跳转 |
-| `C-c a/c/l` | org | agenda / capture / store-link |
+| `C-c a/c/C-l` | org | agenda / capture / store-link |
 | `C-x t *` | treemacs | `t` 切换、`1` 聚焦 |
 | `C-x g` | magit | Git 状态 |
 | `M-o` | ace-window | 窗口跳转与分屏 |
@@ -311,7 +311,7 @@ C-c C-t      view agent transcript     查看 AI 对话记录
 
 ### 5.3 键位冲突规避策略
 
-- Org 占 `C-c a/c/l`，agent-shell 用双 Ctrl `C-c C-a/s/o/t`  
+- Org 占 `C-c a/c/C-l`（store-link 用双 Ctrl 避免与 eglot `C-c l` 冲突），agent-shell 用双 Ctrl `C-c C-a/s/o/t`  
 - 查找统一 `C-c s`（search），eglot 迁到 `C-c l`（language server）  
 - workflow 用 `C-c f`（flow），Web 脚本用 `C-c r`（run）  
 - Magit 保留标准 `C-x g`  
@@ -350,7 +350,7 @@ C-c C-t      view agent transcript     查看 AI 对话记录
 
 | 方式 | 说明 |
 |------|------|
-| `M-x customize-group my-config` | 修改 `my/org-root-dir` 等个人变量 |
+| `M-x customize-group my-config` | 修改 `my/org-root-dir`、`my/features` 等 |
 | `custom.el` | `custom-set-variables` 自动生成，勿手改 |
 | `M-x customize-variable my/theme-flavor` | 切换 catppuccin flavor |
 

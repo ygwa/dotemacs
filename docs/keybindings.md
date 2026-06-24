@@ -140,6 +140,7 @@
 | `S-M-<right>` | `windmove-swap-states-right` | 移窗 |
 | `S-M-<up>` | `windmove-swap-states-up` | 移窗 |
 | `S-M-<down>` | `windmove-swap-states-down` | 移窗 |
+| `S-<return>` | `my/toggle-frame-fullscreen` | **GUI**：切换原生全屏（iTerm2 风格；TUI daemon + `emacsclient -c` 亦可用） |
 
 ## 🌲 Treemacs 文件树
 
@@ -202,7 +203,7 @@
 |---|---|---|
 | `C-c c` | `org-capture` | 捕获条目（Inbox / 任务） |
 | `C-c a` | `org-agenda` | 打开 agenda |
-| `C-c l` | `org-store-link` | 存链接 |
+| `C-c C-l` | `org-store-link` | 存链接（双 Ctrl，避免与 eglot `C-c l` 冲突） |
 
 ## 🌐 Web / Node
 
@@ -249,7 +250,7 @@
 | `C-c f l` | my/workflow-layout | workflow |
 | `C-c j` | avy-goto-char | avy |
 | `C-c J` | avy-goto-line | avy |
-| `C-c l` | org-store-link | org |
+| `C-c C-l` | org-store-link | org |
 | `C-c l a` | eglot-code-actions | eglot |
 | `C-c l d` | eglot-find-declaration | eglot |
 | `C-c l f` | eglot-format | eglot |
