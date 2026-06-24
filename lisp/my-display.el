@@ -72,8 +72,7 @@ Like iTerm2 Shift+Return: normal ↔ fullscreen."
   (when (and frame (display-graphic-p frame) (not my/display--gui-profile-loaded))
     (setq my/display--gui-profile-loaded t)
     (unless (featurep 'config-gui)
-      (require 'config-gui nil t)
-      (require 'config-preview-gui nil t))
+      (require 'config-gui nil t))
     (when (fboundp 'my/setup-gui-fonts)
       (with-selected-frame frame (my/setup-gui-fonts)))))
 

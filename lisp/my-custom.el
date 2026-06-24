@@ -5,11 +5,10 @@
   :group 'convenience
   :prefix "my/")
 
-(defcustom my/features '(ai git-review tab-bar)
+(defcustom my/features '(ai)
   "Optional modules to load at startup.
-`ai' — agent-shell + AI workbench; `git-review' — diff-hl / forge / delta;
-`tab-bar' — project-grouped tab bar (GUI recommended)."
-  :type '(set (const ai) (const git-review) (const tab-bar))
+`ai' — agent-shell + AI workbench."
+  :type '(set (const ai))
   :group 'my-config)
 
 (defcustom my/theme-flavor 'mocha

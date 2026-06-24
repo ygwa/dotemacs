@@ -48,25 +48,28 @@ Agenda for the coming week: (a)
 │   ├── config-org.el      # Org 模式 + Inbox capture
 │   ├── config-shared.el   # 公共 UI（catppuccin/doom-modeline/window）
 │   ├── config-display-tui.el # TUI profile（字符级图标 fallback）
-│   ├── config-gui.el      # GUI profile（字体/图标/平滑滚动）
-│   ├── config-preview-gui.el # GUI 浏览器预览默认
+│   ├── config-gui.el      # GUI profile（字体/图标/平滑滚动/浏览器默认）
 │   ├── config-dashboard.el # 启动页：Git dirty + Projects 🔥
 │   ├── config-treesit.el  # Tree-sitter 语法库源、mode remap、一键安装
-│   ├── config-web.el      # Web 前端（LSP / Prettier / npm）
-│   ├── config-package.el  # 编排层（require 子模块）
-│   ├── config-completion.el / config-navigation.el / config-lsp.el
-│   ├── config-vcs-terminal.el / config-tools.el / config-debug.el
-│   ├── config-lang-python.el / config-lang-rust.el
+│   ├── config-web.el      # Web 前端（eglot / Prettier / npm）
+│   ├── config-edit.el     # 编辑体验（search / completion / LSP / tools）
+│   ├── config-vcs.el      # VCS（project / magit / eat / diff-hl / forge）
+│   ├── config-lang-rust.el / config-lang-python.el # 语言扩展点
 │   ├── config-markdown.el # Markdown 编辑与预览
 │   ├── config-agent.el    # agent-shell + OpenCode + 审阅桥
-│   ├── config-ai.el       # AI workbench 入口（聚合 config-ai-*）
-│   ├── config-git-review.el # diff-hl / magit-delta / forge
-│   └── config-workflow.el # 工作流布局（treemacs + AI panel + 多项目）
+│   ├── config-ai.el       # AI 工作台（5 节：core/review/PR/memory/workbench）
+│   ├── config-debug.el    # Dape 调试（按 adapter 分）
+│   ├── config-package.el  # 编排层（require 子模块）
+│   └── config-workflow.el # 工作流布局（treemacs + AI panel + 多项目 + tab-bar）
 ├── bin/setup-treesit.sh   # 一键安装 tree-sitter 语法库
 ├── tree-sitter/           # tree-sitter 语法库
 ├── var/                   # 运行时数据
 └── docs/                  # 详细使用指南
 ```
+
+> **架构原则（2026-06）**：**每个 config 文件 = 一个领域**,不是"一个包"或"5 行 hook"。
+> 跨文件契约通过显式 `:after` / `with-eval-after-load` 控制, 不允许单向反向 require.
+> 详见 [docs/configuration-overview.md](./docs/configuration-overview.md).
 
 ## 🚀 快速开始
 
@@ -80,7 +83,8 @@ git clone <repo> ~/.emacs.d
 
 > Web/TS 项目的 tree-sitter 语法库需手动安装：打开任一 .ts 文件后跑 `M-x treesit-install-language-grammar`，或 `M-x my/install-all-treesit-grammars`，或 `./bin/setup-treesit.sh` 一键全装。Rust 语法库已预编译在 `tree-sitter/libtree-sitter-rust.dylib`，开箱即用。
 
-可选模块（`M-x customize-variable my/features`）：`ai`（agent + workbench）、`git-review`（diff-hl/forge/delta）、`tab-bar`（按项目分组 tab，GUI 推荐）。
+可选模块（`M-x customize-variable my/features`）：`ai`（agent + workbench,默认开）。
+注：原 `git-review` 与 `tab-bar` feature flag 已废弃——前者合并进 `config-vcs.el`（diff-hl/magit-delta/forge 默认按需加载）,后者合并进 `config-workflow.el`（tab-bar-mode 默认启用）。
 
 ## ⚙️ 加载顺序
 
@@ -88,11 +92,18 @@ git clone <repo> ~/.emacs.d
 
 ```
 config-default  →  config-org  →  config-shared
-              →  config-display-tui（TUI）或 config-gui + config-preview-gui（GUI）
+              →  config-display-tui（TUI）或 config-gui（GUI）
               →  config-dashboard  →  config-treesit
               →  config-web  →  config-package →  config-markdown
               →  config-agent + config-ai（`my/features` 含 `ai` 时）
-              →  config-git-review（`my/features` 含 `git-review` 时）→  config-workflow
+              →  config-workflow
+```
+
+`config-package.el` 内部 require:
+```
+config-vcs (project/magit/eat/diff-hl/forge)  →  config-edit (search/completion/LSP/tools)
+                                          →  config-lang-rust  →  config-lang-python
+                                          →  config-debug
 ```
 
 **启动方式：**

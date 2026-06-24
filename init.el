@@ -67,7 +67,7 @@
 		  config-org
                   config-shared))
 (if (my/gui-session-p)
-    (mapc #'require '(config-gui config-preview-gui))
+    (require 'config-gui)
   (require 'config-display-tui))
 (mapc #'require '(config-dashboard
                   config-treesit
@@ -77,8 +77,6 @@
 (when (memq 'ai my/features)
   (require 'config-agent)
   (require 'config-ai))
-(when (memq 'git-review my/features)
-  (require 'config-git-review))
 (require 'config-workflow)
 
 ;; ============================================
