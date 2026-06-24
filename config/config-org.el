@@ -33,6 +33,7 @@ M-x customize-group my-config 改."
   (global-set-key (kbd "C-c l") #'org-store-link)
   (global-set-key (kbd "C-c a") #'org-agenda)
   (global-set-key (kbd "C-c c") #'org-capture)
+  (define-key org-mode-map (kbd "C-c C-v") #'my/org-preview-dwim)
 
   ;; dashboard agenda widget 需要显式扫描 org 文件
   (setq org-agenda-files

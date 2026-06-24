@@ -45,7 +45,7 @@
   ;; 键绑定 — 只覆盖导出/查看, 不抢 C-c C-c (view-mode 默认)
   ;; ============================================
 
-  (define-key markdown-mode-map (kbd "C-c C-p") #'markdown-preview)
+  (define-key markdown-mode-map (kbd "C-c C-p") #'my/markdown-preview-dwim)
   (define-key markdown-mode-map (kbd "C-c C-e") #'markdown-export)
   (define-key markdown-mode-map (kbd "C-c C-d") #'my/markdown-send-to-agent))
 

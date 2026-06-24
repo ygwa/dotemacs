@@ -12,12 +12,12 @@
 
 (use-package project
   :ensure nil ; 内置包
-  :bind (("C-c p f" . project-find-file)
-         ("C-c p b" . project-switch-to-buffer)
+  :bind (("C-c p b" . project-switch-to-buffer)
          ("C-c p d" . project-dired)
          ("C-c p v" . project-vc-dir)
          ;; C-c p s → eat-project (见 eat 配置块)
-         ("C-c p g" . project-find-regexp))
+         ;; C-c p f/g → C-c s f/p (search 前缀)
+         )
   :config
   ;; 增强非 Git 项目识别（例如只有 package.json 的前端项目）
   (setq project-vc-extra-root-markers '("package.json" "requirements.txt" ".project")))
@@ -112,6 +112,22 @@
 ;; ============================================
 ;; 5. 搜索和导航
 ;; ============================================
+;; 查找类统一前缀 C-c s (search). eglot 迁到 C-c l (language server).
+
+(defvar my/search-map
+  (let ((map (make-sparse-keymap "Search")))
+    (define-key map (kbd "b") #'consult-buffer)
+    (define-key map (kbd "f") #'project-find-file)
+    (define-key map (kbd "g") #'consult-git-grep)
+    (define-key map (kbd "k") #'consult-ripgrep)
+    (define-key map (kbd "r") #'consult-recent-file)
+    (define-key map (kbd "p") #'project-find-regexp)
+    (define-key map (kbd "o") #'consult-locate)
+    (define-key map (kbd "m") #'consult-bookmark)
+    map)
+  "Consult / project 查找 (`C-c s` 前缀).")
+
+(global-set-key (kbd "C-c s") my/search-map)
 
 (use-package vertico
   :ensure t
@@ -131,19 +147,12 @@
   :bind
   (("C-s" . consult-line)
    ("C-M-s" . consult-line-multi)
-   ("C-x b" . consult-buffer)
    ("M-y" . consult-yank-pop)
-   ("C-x r b" . consult-bookmark)
-   ("C-c C-r" . consult-recent-file)
-   ("C-c g" . consult-git-grep)
-   ("C-c k" . consult-ripgrep)
-   ("C-x l" . consult-locate)
    ("<f1> f" . consult-describe-function)
    ("<f1> v" . consult-describe-variable)
    ("<f1> l" . consult-find-library)
    ("<f2> i" . consult-info-lookup-symbol)
    ("<f2> u" . consult-unicode-char)
-   ("<f6>" . consult-buffer)
    :map read-expression-map
    ("C-r" . consult-expression-history)))
 
@@ -239,14 +248,14 @@
       (add-to-list 'eglot-server-programs `(rust-mode . ,(vector ra)) t)
       (add-to-list 'eglot-server-programs `(rust-ts-mode . ,(vector ra)) t)))
   
-  ;; 通用键绑定 (C-c s = server)
-  (define-key eglot-mode-map (kbd "C-c s r") 'eglot-rename)
-  (define-key eglot-mode-map (kbd "C-c s f") 'eglot-format)
-  (define-key eglot-mode-map (kbd "C-c s a") 'eglot-code-actions)
-  (define-key eglot-mode-map (kbd "C-c s h") 'eglot-help-at-point)
-  (define-key eglot-mode-map (kbd "C-c s d") 'eglot-find-declaration)
-  (define-key eglot-mode-map (kbd "C-c s i") 'eglot-find-implementation)
-  (define-key eglot-mode-map (kbd "C-c s t") 'eglot-find-typeDefinition)
+  ;; 通用键绑定 (C-c l = language server; C-c s 留给 search 前缀)
+  (define-key eglot-mode-map (kbd "C-c l r") 'eglot-rename)
+  (define-key eglot-mode-map (kbd "C-c l f") 'eglot-format)
+  (define-key eglot-mode-map (kbd "C-c l a") 'eglot-code-actions)
+  (define-key eglot-mode-map (kbd "C-c l h") 'eglot-help-at-point)
+  (define-key eglot-mode-map (kbd "C-c l d") 'eglot-find-declaration)
+  (define-key eglot-mode-map (kbd "C-c l i") 'eglot-find-implementation)
+  (define-key eglot-mode-map (kbd "C-c l t") 'eglot-find-typeDefinition)
 
   ;; Rust 安装提示 hook 注册在 use-package 外顶层 (见下方 dolist), 不依赖 eglot 懒加载,
   ;; 否则首次打开 .rs 时 hint 还没注册, 第一次无提示
@@ -257,17 +266,18 @@
 ;; ============================================
 ;; 打通 eglot LSP workspace/symbol 与 consult,
 ;; 在项目里按符号搜 (跨文件), 区别于 consult-git-grep (按文本).
-;; C-c e s  搜项目符号 (LSP workspace/symbol)
+;; C-c s e  搜项目 LSP 符号 (workspace/symbol)
 ;;
 ;; consult-eglot 只有一个公共命令 `consult-eglot-symbols',
 ;; 内部已处理"跨项目"vs"单文件"选择 (有 project 时查项目 server, 无时查当前 server).
-;; 想再细粒度区分, 走 C-c s d/i/t (eglot 跳声明/实现/类型).
+;; 想再细粒度区分, 走 C-c l d/i/t (eglot 跳声明/实现/类型).
 
 (use-package consult-eglot
   :ensure t
   :defer t
   :after (consult eglot)
-  :bind ("C-c e s" . consult-eglot-symbols))
+  :config
+  (define-key my/search-map (kbd "e") #'consult-eglot-symbols))
 
 ;; ============================================
 ;; 10. Jinx 拼写检查 (替代 flyspell)

@@ -47,7 +47,7 @@
 ;; 2. Apheleia (异步代码格式化 - Prettier)
 ;; ============================================
 ;; 格式化键位: Web buffer 内 C-c C-f → apheleia-format-buffer (Prettier).
-;; eglot-mode-map 的 C-c s f 仍走 LSP 格式化, 见 config-package.el.
+;; eglot-mode-map 的 C-c l f 仍走 LSP 格式化, 见 config-package.el.
 
 (use-package apheleia
   :ensure t
@@ -110,11 +110,11 @@
 
 (with-eval-after-load 'typescript-ts-mode
   (define-key typescript-ts-mode-map (kbd "C-c C-f") 'apheleia-format-buffer)
-  (define-key typescript-ts-mode-map (kbd "C-c s o") 'eglot-code-action-organize-imports))
+  (define-key typescript-ts-mode-map (kbd "C-c l o") 'eglot-code-action-organize-imports))
 
 (with-eval-after-load 'tsx-ts-mode
   (define-key tsx-ts-mode-map (kbd "C-c C-f") 'apheleia-format-buffer)
-  (define-key tsx-ts-mode-map (kbd "C-c s o") 'eglot-code-action-organize-imports))
+  (define-key tsx-ts-mode-map (kbd "C-c l o") 'eglot-code-action-organize-imports))
 
 (with-eval-after-load 'js-ts-mode
   (define-key js-ts-mode-map (kbd "C-c C-f") 'apheleia-format-buffer))
